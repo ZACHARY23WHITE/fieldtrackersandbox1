@@ -5,15 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baseball Field Moisture Tracker</title>
 
- <!-- App icons -->
+    <!-- App icons -->
     <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png">
-<link rel="icon" type="image/png" sizes="192x192" href="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png">
-<link rel="apple-touch-icon" sizes="180x180" href="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png">
 
-
-
-
-    
     <style>
         :root {
             --color-cream-50: rgba(252, 252, 249, 1);
@@ -51,7 +47,6 @@
             --space-24: 24px;
             --radius-base: 8px;
             --radius-lg: 12px;
-
             --tdr-bg: rgba(33, 128, 80, 0.10);
             --tdr-accent: #1a7a42;
             --tdr-text: #15603a;
@@ -77,7 +72,6 @@
                 --color-btn-primary-text: var(--color-slate-900);
                 --color-secondary: rgba(var(--color-gray-400-rgb), 0.15);
                 --color-secondary-hover: rgba(var(--color-gray-400-rgb), 0.25);
-
                 --tdr-bg: rgba(50, 184, 120, 0.12);
                 --tdr-accent: #4ade80;
                 --tdr-text: #6ee7a0;
@@ -96,18 +90,164 @@
             background-color: var(--color-background);
             color: var(--color-text);
             line-height: 1.6;
+        }
+
+        /* ===================== LOGIN SCREEN ===================== */
+        #loginScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+            background: var(--color-background);
+        }
+
+        .login-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 16px;
+            padding: 40px 32px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            object-fit: cover;
+        }
+
+        .login-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        .login-subtitle {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        .login-field {
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .login-field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .login-field input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background: var(--color-background);
+            color: var(--color-text);
+            font-size: 15px;
+            font-family: var(--font-family-base);
+            transition: border-color 0.2s, outline 0.2s;
+        }
+
+        .login-field input:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            background: var(--color-primary);
+            color: var(--color-btn-primary-text);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s;
+            font-family: var(--font-family-base);
+        }
+
+        .login-btn:hover { background: var(--color-primary-hover); }
+        .login-btn:active { background: var(--color-primary-active); }
+
+        .login-error {
+            color: #ef4444;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 10px;
+            min-height: 18px;
+            display: none;
+            width: 100%;
+        }
+
+        /* ===================== MAIN APP ===================== */
+        #mainApp {
+            display: none;
             padding: var(--space-20);
         }
 
         .container { max-width: 1200px; margin: 0 auto; }
 
-        h1 { font-size: 28px; margin-bottom: var(--space-8); color: var(--color-text); }
-
-        .subtitle {
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-24);
-            font-size: 14px;
+        .app-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-8);
+            flex-wrap: wrap;
+            gap: 12px;
         }
+
+        .app-topbar-left h1 { font-size: 28px; margin-bottom: var(--space-8); color: var(--color-text); }
+        .subtitle { color: var(--color-text-secondary); margin-bottom: var(--space-24); font-size: 14px; }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            color: var(--color-text-secondary);
+        }
+
+        .user-badge strong { color: var(--color-text); }
+
+        .logout-btn {
+            padding: 6px 14px;
+            background: var(--color-secondary);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font-family-base);
+            transition: background 0.15s;
+        }
+
+        .logout-btn:hover { background: var(--color-secondary-hover); }
 
         .section {
             background-color: var(--color-surface);
@@ -205,6 +345,7 @@
         .button {
             padding: 12px 24px; border: none; border-radius: var(--radius-base);
             font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            font-family: var(--font-family-base);
         }
         .button-primary { background-color: var(--color-primary); color: var(--color-btn-primary-text); }
         .button-primary:hover { background-color: var(--color-primary-hover); }
@@ -223,17 +364,11 @@
         .draft-notice.show { display: flex; }
         .draft-notice-btn {
             padding: 4px 12px; border-radius: 4px; font-size: 12px;
-            font-weight: 600; cursor: pointer; border: none;
+            font-weight: 600; cursor: pointer; border: none; font-family: var(--font-family-base);
         }
-        .draft-notice-btn.resume {
-            background: var(--color-primary); color: var(--color-btn-primary-text);
-        }
-        .draft-notice-btn.discard {
-            background: var(--color-secondary); color: var(--color-text);
-            border: 1px solid var(--color-border);
-        }
+        .draft-notice-btn.resume { background: var(--color-primary); color: var(--color-btn-primary-text); }
+        .draft-notice-btn.discard { background: var(--color-secondary); color: var(--color-text); border: 1px solid var(--color-border); }
 
-        /* Date range filter */
         .date-filter {
             background: var(--color-surface); border-radius: var(--radius-lg);
             border: 1px solid var(--color-border); padding: var(--space-16) var(--space-20);
@@ -252,6 +387,7 @@
         .filter-btn {
             padding: 8px 20px; border: none; border-radius: 6px;
             font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+            font-family: var(--font-family-base);
         }
         .filter-btn-primary { background: var(--color-primary); color: var(--color-btn-primary-text); }
         .filter-btn-primary:hover { background: var(--color-primary-hover); }
@@ -259,7 +395,6 @@
         .filter-btn-secondary:hover { background: var(--color-secondary-hover); }
         .filter-info { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-8); }
 
-        /* Report tables */
         .report-section {
             margin-top: var(--space-24); background-color: var(--color-surface);
             border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden;
@@ -285,7 +420,6 @@
         .report-table .avg-cell.shear { color: var(--shear-accent); font-weight: 700; }
         .report-empty { padding: var(--space-24); text-align: center; color: var(--color-text-secondary); font-size: 13px; }
 
-        /* Chart */
         .chart-container {
             margin-top: var(--space-24); padding: var(--space-20);
             background-color: var(--color-surface); border-radius: var(--radius-lg);
@@ -322,15 +456,13 @@
         }
         .chart-tooltip.show { opacity: 1; }
 
-        .empty-state { text-align: center; padding: var(--space-24); color: var(--color-text-secondary); }
-
         .toast {
             position: fixed; bottom: 24px; right: 24px;
             background-color: var(--color-primary); color: var(--color-btn-primary-text);
             padding: var(--space-16) var(--space-20); border-radius: var(--radius-base);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             opacity: 0; transform: translateY(20px); transition: all 0.3s;
-            pointer-events: none; z-index: 100;
+            pointer-events: none; z-index: 100; font-family: var(--font-family-base);
         }
         .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
@@ -338,155 +470,198 @@
             .zone-grid { grid-template-columns: 1fr; }
             .reading-inputs { grid-template-columns: repeat(2, 1fr); }
             .chart { height: 350px; }
+            .app-topbar { flex-direction: column; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>&#9918; Baseball Field Moisture Tracker Sandbox</h1>
-        <p class="subtitle">Track TDR and Shear readings across 6 field zones with 6 subzones each</p>
 
-        <div class="section">
-            <div class="section-header">
-                <h2 class="section-title">Moisture Readings</h2>
+    <!-- ===================== LOGIN SCREEN ===================== -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <img class="login-logo"
+                 src="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png"
+                 alt="GroundsCrew Logo">
+            <div class="login-title">GroundsCrew</div>
+            <div class="login-subtitle">Field Moisture &amp; Shear Tracker</div>
+
+            <div class="login-field">
+                <label for="loginEmail">Team Email</label>
+                <input type="email" id="loginEmail" placeholder="team@example.com" autocomplete="email">
+            </div>
+            <div class="login-field">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
             </div>
 
-            <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end; margin-bottom:var(--space-16);">
-                <div class="entered-by-wrapper" style="margin-bottom:0;">
-                    <label for="enteredBy">Entered by</label>
-                    <input type="text" id="enteredBy" placeholder="First name">
-                </div>
-                <div style="display:flex; flex-direction:column; gap:4px; min-width:130px;">
-                    <label for="tempHigh" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Temp High (&deg;F)</label>
-                    <input type="number" id="tempHigh" placeholder="75" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
-                </div>
-                <div style="display:flex; flex-direction:column; gap:4px; min-width:130px;">
-                    <label for="tempLow" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Temp Low (&deg;F)</label>
-                    <input type="number" id="tempLow" placeholder="55" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
-                </div>
-                <div style="display:flex; flex-direction:column; gap:4px; min-width:140px;">
-                    <label for="weatherCondition" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Weather Condition</label>
-                    <select id="weatherCondition" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
-                        <option value="">Select...</option>
-                        <option value="sunny">Sunny</option>
-                        <option value="cloudy">Cloudy</option>
-                        <option value="rainy">Rainy</option>
-                    </select>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:4px; min-width:130px;">
-                    <label for="roofStatus" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Roof Status</label>
-                    <select id="roofStatus" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
-                        <option value="">Select...</option>
-                        <option value="Open">Open</option>
-                        <option value="Closed">Closed</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="zone-grid" id="zoneGrid"></div>
-
-            <div class="button-group">
-                <button class="button button-secondary" id="clearBtn">Clear All</button>
-                <button class="button button-secondary" id="saveDraftBtn">&#128190; Save Draft</button>
-                <button class="button button-secondary" id="exportBtn">Export CSV</button>
-                <button class="button button-secondary" id="importBtn">Import Data</button>
-                <button class="button button-primary" id="submitBtn">Submit Readings</button>
-            </div>
-            <input type="file" id="importFile" accept=".json,.csv" style="display: none;">
-
-            <div class="draft-notice" id="draftNotice">
-                &#128221; <strong>You have a saved draft.</strong>
-                <button class="draft-notice-btn resume" id="loadDraftBtn">Resume Draft</button>
-                <button class="draft-notice-btn discard" id="discardDraftBtn">Discard</button>
-            </div>
+            <button class="login-btn" id="loginBtn">Login</button>
+            <div class="login-error" id="loginError"></div>
         </div>
+    </div>
 
-        <!-- Date Range Filter -->
-        <div class="date-filter">
-            <h3>&#128197; Report Date Range</h3>
-            <div class="date-filter-row">
-                <div class="date-filter-field">
-                    <label for="filterStart">Start Date</label>
-                    <input type="date" id="filterStart">
+    <!-- ===================== MAIN APP ===================== -->
+    <div id="mainApp">
+        <div class="container">
+
+            <div class="app-topbar">
+                <div class="app-topbar-left">
+                    <h1>&#9918; Baseball Field Moisture Tracker Sandbox</h1>
+                    <p class="subtitle">Track TDR and Shear readings across field zones</p>
                 </div>
-                <div class="date-filter-field">
-                    <label for="filterEnd">End Date</label>
-                    <input type="date" id="filterEnd">
+                <div class="user-badge">
+                    <span>Logged in as <strong id="userEmailDisplay"></strong></span>
+                    <button class="logout-btn" id="logoutBtn">Log Out</button>
                 </div>
-                <button class="filter-btn filter-btn-primary" id="applyFilterBtn">Apply Filter</button>
-                <button class="filter-btn filter-btn-secondary" id="resetFilterBtn">Reset (Last 7 Days)</button>
             </div>
-            <div class="filter-info" id="filterInfo">Showing last 7 days</div>
-        </div>
 
-        <!-- TDR Report -->
-        <div class="report-section">
-            <div class="report-header tdr">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
-                TDR Report
-            </div>
-            <div class="report-body">
-                <div class="report-empty" id="tdrEmpty">No TDR readings submitted yet.</div>
-                <table class="report-table" id="tdrReportTable" style="display:none;">
-                    <thead>
-                        <tr>
-                            <th style="text-align:left;">Date</th>
-                            <th style="text-align:left;">By</th>
-                            <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
-                            <th>Left Field</th><th>Center Field</th><th>Right Field</th>
-                            <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tdrReportBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Shear Report -->
-        <div class="report-section">
-            <div class="report-header shear">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                Shear Report
-            </div>
-            <div class="report-body">
-                <div class="report-empty" id="shearEmpty">No Shear readings submitted yet.</div>
-                <table class="report-table" id="shearReportTable" style="display:none;">
-                    <thead>
-                        <tr>
-                            <th style="text-align:left;">Date</th>
-                            <th style="text-align:left;">By</th>
-                            <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
-                            <th>Left Field</th><th>Center Field</th><th>Right Field</th>
-                            <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
-                        </tr>
-                    </thead>
-                    <tbody id="shearReportBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Charts -->
-        <div class="chart-container">
-            <h2 class="chart-title">Trends Over Time</h2>
-            <div class="chart-tab-bar">
-                <button class="chart-tab active" data-chart-type="tdr" id="chartTabTdr">TDR</button>
-                <button class="chart-tab" data-chart-type="shear" id="chartTabShear">Shear</button>
-            </div>
-            <div class="chart">
-                <div class="chart-canvas" id="chartCanvas">
-                    <svg class="chart-svg" id="chartSvg"></svg>
-                    <div class="chart-tooltip" id="chartTooltip"></div>
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Moisture Readings</h2>
                 </div>
-                <div class="chart-legend" id="chartLegend"></div>
+
+                <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end; margin-bottom:var(--space-16);">
+                    <div class="entered-by-wrapper" style="margin-bottom:0;">
+                        <label for="enteredBy">Entered by</label>
+                        <input type="text" id="enteredBy" placeholder="First name">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px; min-width:130px;">
+                        <label for="tempHigh" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Temp High (&deg;F)</label>
+                        <input type="number" id="tempHigh" placeholder="75" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px; min-width:130px;">
+                        <label for="tempLow" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Temp Low (&deg;F)</label>
+                        <input type="number" id="tempLow" placeholder="55" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px; min-width:140px;">
+                        <label for="weatherCondition" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Weather Condition</label>
+                        <select id="weatherCondition" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
+                            <option value="">Select...</option>
+                            <option value="sunny">Sunny</option>
+                            <option value="cloudy">Cloudy</option>
+                            <option value="rainy">Rainy</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px; min-width:130px;">
+                        <label for="roofStatus" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Roof Status</label>
+                        <select id="roofStatus" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
+                            <option value="">Select...</option>
+                            <option value="Open">Open</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="zone-grid" id="zoneGrid"></div>
+
+                <div class="button-group">
+                    <button class="button button-secondary" id="clearBtn">Clear All</button>
+                    <button class="button button-secondary" id="saveDraftBtn">&#128190; Save Draft</button>
+                    <button class="button button-secondary" id="exportBtn">Export CSV</button>
+                    <button class="button button-secondary" id="importBtn">Import Data</button>
+                    <button class="button button-primary" id="submitBtn">Submit Readings</button>
+                </div>
+                <input type="file" id="importFile" accept=".json,.csv" style="display: none;">
+
+                <div class="draft-notice" id="draftNotice">
+                    &#128221; <strong>You have a saved draft.</strong>
+                    <button class="draft-notice-btn resume" id="loadDraftBtn">Resume Draft</button>
+                    <button class="draft-notice-btn discard" id="discardDraftBtn">Discard</button>
+                </div>
             </div>
+
+            <!-- Date Range Filter -->
+            <div class="date-filter">
+                <h3>&#128197; Report Date Range</h3>
+                <div class="date-filter-row">
+                    <div class="date-filter-field">
+                        <label for="filterStart">Start Date</label>
+                        <input type="date" id="filterStart">
+                    </div>
+                    <div class="date-filter-field">
+                        <label for="filterEnd">End Date</label>
+                        <input type="date" id="filterEnd">
+                    </div>
+                    <button class="filter-btn filter-btn-primary" id="applyFilterBtn">Apply Filter</button>
+                    <button class="filter-btn filter-btn-secondary" id="resetFilterBtn">Reset (Last 7 Days)</button>
+                </div>
+                <div class="filter-info" id="filterInfo">Showing last 7 days</div>
+            </div>
+
+            <!-- TDR Report -->
+            <div class="report-section">
+                <div class="report-header tdr">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                    TDR Report
+                </div>
+                <div class="report-body">
+                    <div class="report-empty" id="tdrEmpty">No TDR readings submitted yet.</div>
+                    <table class="report-table" id="tdrReportTable" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left;">Date</th>
+                                <th style="text-align:left;">By</th>
+                                <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
+                                <th>Left Field</th><th>Center Field</th><th>Right Field</th>
+                                <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tdrReportBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Shear Report -->
+            <div class="report-section">
+                <div class="report-header shear">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    Shear Report
+                </div>
+                <div class="report-body">
+                    <div class="report-empty" id="shearEmpty">No Shear readings submitted yet.</div>
+                    <table class="report-table" id="shearReportTable" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left;">Date</th>
+                                <th style="text-align:left;">By</th>
+                                <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
+                                <th>Left Field</th><th>Center Field</th><th>Right Field</th>
+                                <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shearReportBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="chart-container">
+                <h2 class="chart-title">Trends Over Time</h2>
+                <div class="chart-tab-bar">
+                    <button class="chart-tab active" data-chart-type="tdr" id="chartTabTdr">TDR</button>
+                    <button class="chart-tab" data-chart-type="shear" id="chartTabShear">Shear</button>
+                </div>
+                <div class="chart">
+                    <div class="chart-canvas" id="chartCanvas">
+                        <svg class="chart-svg" id="chartSvg"></svg>
+                        <div class="chart-tooltip" id="chartTooltip"></div>
+                    </div>
+                    <div class="chart-legend" id="chartLegend"></div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <div class="toast" id="toast"></div>
 
     <script type="module">
-        // --- Firebase imports ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import {
+            getAuth,
+            signInWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
         import {
             getFirestore,
             collection,
@@ -501,18 +676,18 @@
             Timestamp
         } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyABg24W2TQ1QzgLCFgK1YrGdSW7GCHR65k",
-  authDomain: "fieldtrackersandbox1.firebaseapp.com",
-  projectId: "fieldtrackersandbox1",
-  storageBucket: "fieldtrackersandbox1.firebasestorage.app",
-  messagingSenderId: "1006594230144",
-  appId: "1:1006594230144:web:3aac37eebd047d51b3a365",
-  measurementId: "G-GMXJ2S8RFX"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyABg24W2TQ1QzgLCFgK1YrGdSW7GCHR65k",
+            authDomain: "fieldtrackersandbox1.firebaseapp.com",
+            projectId: "fieldtrackersandbox1",
+            storageBucket: "fieldtrackersandbox1.firebasestorage.app",
+            messagingSenderId: "1006594230144",
+            appId: "1:1006594230144:web:3aac37eebd047d51b3a365",
+            measurementId: "G-GMXJ2S8RFX"
+        };
 
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
 
         // ================================================================
@@ -527,7 +702,71 @@ const firebaseConfig = {
         let activeChartType = 'tdr';
         let customFilterStart = null;
         let customFilterEnd = null;
+        let currentUser = null;
+        let unsubscribeReadings = null;
         const DRAFT_DOC_ID = 'current_draft';
+
+        // ================================================================
+        //  HELPERS: per-user Firestore paths
+        // ================================================================
+        function readingsCol() {
+            return collection(db, 'teams', currentUser.uid, 'moistureReadings');
+        }
+        function draftDocRef() {
+            return doc(db, 'teams', currentUser.uid, 'drafts', DRAFT_DOC_ID);
+        }
+
+        // ================================================================
+        //  AUTH STATE
+        // ================================================================
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('userEmailDisplay').textContent = user.email;
+                initializeZoneGrid();
+                listenForReadings();
+                checkForExistingDraft();
+            } else {
+                currentUser = null;
+                if (unsubscribeReadings) { unsubscribeReadings(); unsubscribeReadings = null; }
+                readingsHistory = [];
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'none';
+            }
+        });
+
+        // ================================================================
+        //  LOGIN / LOGOUT
+        // ================================================================
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errEl = document.getElementById('loginError');
+            errEl.style.display = 'none';
+            if (!email || !password) {
+                errEl.textContent = 'Please enter your email and password.';
+                errEl.style.display = 'block';
+                return;
+            }
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (err) {
+                errEl.textContent = 'Invalid email or password. Please try again.';
+                errEl.style.display = 'block';
+            }
+        });
+
+        // Allow pressing Enter to submit login
+        document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('loginBtn').click();
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await signOut(auth);
+            showToast('Logged out successfully.');
+        });
 
         // ================================================================
         //  ZONE GRID
@@ -575,7 +814,6 @@ const firebaseConfig = {
                         input.id = 'zone-' + zoneIndex + '-' + type + '-reading-' + i;
                         input.addEventListener('input', () => updateZoneAverage(zoneIndex, type));
                         inputWrapper.appendChild(input);
-
                         readingInputs.appendChild(inputWrapper);
                     }
 
@@ -611,6 +849,8 @@ const firebaseConfig = {
         //  SUBMIT
         // ================================================================
         async function submitReadings() {
+            if (!currentUser) { showToast('Please log in first.'); return; }
+
             const enteredBy = document.getElementById('enteredBy').value.trim();
             const tempHighVal = document.getElementById('tempHigh').value.trim();
             const tempLowVal = document.getElementById('tempLow').value.trim();
@@ -660,25 +900,24 @@ const firebaseConfig = {
             }
 
             try {
-                await addDoc(collection(db, "moistureReadings"), reading);
-                showToast('Readings saved to Firebase!');
+                await addDoc(readingsCol(), reading);
+                showToast('Readings saved!');
                 clearForm(false);
-                // Also discard draft if one exists
-                try { await deleteDoc(doc(db, 'drafts', DRAFT_DOC_ID)); } catch (e) { /* ignore */ }
+                try { await deleteDoc(draftDocRef()); } catch (e) { /* ignore */ }
                 showDraftNotice(false);
             } catch (error) {
-                console.error("Error saving to Firebase:", error);
+                console.error('Error saving to Firebase:', error);
                 showToast('Error saving — check console for details.');
             }
         }
 
         // ================================================================
-        //  DRAFT — SAVE / LOAD / DISCARD (Firestore)
+        //  DRAFT — SAVE / LOAD / DISCARD
         // ================================================================
         async function saveDraft() {
-            const enteredBy = document.getElementById('enteredBy').value.trim();
+            if (!currentUser) { showToast('Please log in first.'); return; }
             const draftData = {
-                enteredBy: enteredBy,
+                enteredBy: document.getElementById('enteredBy').value.trim(),
                 tempHigh: document.getElementById('tempHigh').value.trim(),
                 tempLow: document.getElementById('tempLow').value.trim(),
                 weatherCondition: document.getElementById('weatherCondition').value,
@@ -699,10 +938,9 @@ const firebaseConfig = {
             });
 
             try {
-                const draftRef = doc(db, 'drafts', DRAFT_DOC_ID);
-                await setDoc(draftRef, draftData);
+                await setDoc(draftDocRef(), draftData);
                 showDraftNotice(true);
-                showToast('Draft saved to Firebase! You can close and come back later.');
+                showToast('Draft saved! You can close and come back later.');
             } catch (error) {
                 console.error('Error saving draft:', error);
                 showToast('Error saving draft — check console.');
@@ -710,13 +948,10 @@ const firebaseConfig = {
         }
 
         async function loadDraft() {
+            if (!currentUser) return;
             try {
-                const draftRef = doc(db, 'drafts', DRAFT_DOC_ID);
-                const snap = await getDoc(draftRef);
-                if (!snap.exists()) {
-                    showToast('No draft found.');
-                    return;
-                }
+                const snap = await getDoc(draftDocRef());
+                if (!snap.exists()) { showToast('No draft found.'); return; }
                 const d = snap.data();
                 document.getElementById('enteredBy').value = d.enteredBy || '';
                 document.getElementById('tempHigh').value = d.tempHigh || '';
@@ -728,8 +963,7 @@ const firebaseConfig = {
                     readingTypes.forEach(type => {
                         for (let i = 1; i <= 6; i++) {
                             const input = document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i);
-                            const val = d.zones?.[String(zoneIndex)]?.[type]?.[String(i)] || '';
-                            input.value = val;
+                            input.value = d.zones?.[String(zoneIndex)]?.[type]?.[String(i)] || '';
                         }
                         updateZoneAverage(zoneIndex, type);
                     });
@@ -743,14 +977,14 @@ const firebaseConfig = {
         }
 
         async function discardDraft() {
+            if (!currentUser) return;
             try {
-                const draftRef = doc(db, 'drafts', DRAFT_DOC_ID);
-                await deleteDoc(draftRef);
+                await deleteDoc(draftDocRef());
                 showDraftNotice(false);
                 showToast('Draft discarded.');
             } catch (error) {
                 console.error('Error discarding draft:', error);
-                showToast('Error discarding draft — check console.');
+                showToast('Error discarding draft.');
             }
         }
 
@@ -760,14 +994,10 @@ const firebaseConfig = {
         }
 
         async function checkForExistingDraft() {
+            if (!currentUser) return;
             try {
-                const draftRef = doc(db, 'drafts', DRAFT_DOC_ID);
-                const snap = await getDoc(draftRef);
-                if (snap.exists()) {
-                    const d = snap.data();
-                    // Only show notice if it has real zone data (not just the placeholder)
-                    if (d.zones) { showDraftNotice(true); }
-                }
+                const snap = await getDoc(draftDocRef());
+                if (snap.exists() && snap.data().zones) { showDraftNotice(true); }
             } catch (e) {
                 console.error('Error checking for draft:', e);
             }
@@ -797,9 +1027,10 @@ const firebaseConfig = {
         //  REAL-TIME LISTENER
         // ================================================================
         function listenForReadings() {
-            const q = query(collection(db, "moistureReadings"), orderBy("timestamp", "asc"));
+            if (unsubscribeReadings) { unsubscribeReadings(); }
+            const q = query(readingsCol(), orderBy('timestamp', 'asc'));
 
-            onSnapshot(q, (snapshot) => {
+            unsubscribeReadings = onSnapshot(q, (snapshot) => {
                 readingsHistory = [];
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
@@ -818,13 +1049,13 @@ const firebaseConfig = {
                 updateChart();
                 updateReportTables();
             }, (error) => {
-                console.error("Firestore listener error:", error);
+                console.error('Firestore listener error:', error);
                 showToast('Error loading data from Firebase.');
             });
         }
 
         // ================================================================
-        //  REPORT TABLES (with date filtering)
+        //  REPORT TABLES
         // ================================================================
         function parseReadingDate(dateStr) {
             const d = new Date(dateStr);
@@ -885,10 +1116,11 @@ const firebaseConfig = {
             let hasTdr = false, hasShear = false;
 
             filtered.forEach(reading => {
-                const weatherCells = '<td>' + escapeHTML(reading.tempHigh != null ? String(reading.tempHigh) : '\u2014') + '</td>'
-                    + '<td>' + escapeHTML(reading.tempLow != null ? String(reading.tempLow) : '\u2014') + '</td>'
-                    + '<td>' + escapeHTML(reading.weatherCondition || '\u2014') + '</td>'
-                    + '<td>' + escapeHTML(reading.roofStatus || '\u2014') + '</td>';
+                const weatherCells =
+                    '<td>' + escapeHTML(reading.tempHigh != null ? String(reading.tempHigh) : '\u2014') + '</td>' +
+                    '<td>' + escapeHTML(reading.tempLow != null ? String(reading.tempLow) : '\u2014') + '</td>' +
+                    '<td>' + escapeHTML(reading.weatherCondition || '\u2014') + '</td>' +
+                    '<td>' + escapeHTML(reading.roofStatus || '\u2014') + '</td>';
 
                 let tdrRow = '<tr><td style="text-align:left;">' + escapeHTML(reading.date) + '</td>';
                 tdrRow += '<td style="text-align:left;">' + escapeHTML(reading.enteredBy || '\u2014') + '</td>';
@@ -901,17 +1133,12 @@ const firebaseConfig = {
 
                 zones.forEach(zoneName => {
                     const zd = reading.zones.find(z => z.name === zoneName);
-
                     if (zd && zd.tdr && zd.tdr.average != null) {
                         tdrRow += '<td class="avg-cell tdr">' + zd.tdr.average.toFixed(1) + '</td>';
-                        rowHasTdr = true;
-                    } else if (zd && typeof zd.average === 'number') {
-                        tdrRow += '<td>' + zd.average.toFixed(1) + '</td>';
                         rowHasTdr = true;
                     } else {
                         tdrRow += '<td>\u2014</td>';
                     }
-
                     if (zd && zd.shear && zd.shear.average != null) {
                         shearRow += '<td class="avg-cell shear">' + zd.shear.average.toFixed(1) + '</td>';
                         rowHasShear = true;
@@ -922,7 +1149,6 @@ const firebaseConfig = {
 
                 tdrRow += '</tr>';
                 shearRow += '</tr>';
-
                 if (rowHasTdr) { tdrBody.innerHTML += tdrRow; hasTdr = true; }
                 if (rowHasShear) { shearBody.innerHTML += shearRow; hasShear = true; }
             });
@@ -965,10 +1191,8 @@ const firebaseConfig = {
                     let avg = null;
                     if (zone[activeChartType] && zone[activeChartType].average != null) {
                         avg = zone[activeChartType].average;
-                    } else if (activeChartType === 'tdr' && typeof zone.average === 'number') {
-                        avg = zone.average;
                     }
-                    if (avg !== null) {
+                    if (avg !== null && zoneData[zone.name]) {
                         zoneData[zone.name].push({ index, value: avg, date: reading.date });
                     }
                 });
@@ -1068,16 +1292,13 @@ const firebaseConfig = {
                 let csv = 'Date,Entered By,Type,Left Field,Center Field,Right Field,1st Base Line,3rd Base Line,Infield\n';
                 readingsHistory.forEach(reading => {
                     const base = ['"' + reading.date + '"', '"' + (reading.enteredBy || '') + '"'];
-                    // TDR row
                     const tdrRow = [...base, 'TDR'];
                     zones.forEach(zn => {
                         const z = reading.zones.find(zz => zz.name === zn);
                         if (z && z.tdr && z.tdr.average != null) tdrRow.push(z.tdr.average.toFixed(1));
-                        else if (z && typeof z.average === 'number') tdrRow.push(z.average.toFixed(1));
                         else tdrRow.push('');
                     });
                     csv += tdrRow.join(',') + '\n';
-                    // Shear row
                     const shearRow = [...base, 'Shear'];
                     zones.forEach(zn => {
                         const z = reading.zones.find(zz => zz.name === zn);
@@ -1089,8 +1310,7 @@ const firebaseConfig = {
                 const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
-                link.href = url;
-                link.download = 'baseball-field-readings-' + new Date().toISOString().split('T')[0] + '.csv';
+                link.href = url; link.download = 'field-readings-' + new Date().toISOString().split('T')[0] + '.csv';
                 document.body.appendChild(link);
                 setTimeout(() => { link.click(); setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 100); }, 10);
                 showToast('Exporting ' + readingsHistory.length + ' reading(s)...');
@@ -1101,6 +1321,7 @@ const firebaseConfig = {
         //  IMPORT
         // ================================================================
         function importData(event) {
+            if (!currentUser) { showToast('Please log in first.'); return; }
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
@@ -1110,7 +1331,7 @@ const firebaseConfig = {
                     if (!Array.isArray(imported)) { showToast('Invalid file format.'); return; }
                     let count = 0;
                     for (const r of imported) {
-                        await addDoc(collection(db, "moistureReadings"), {
+                        await addDoc(readingsCol(), {
                             timestamp: Timestamp.now(), date: r.date || new Date().toLocaleString(),
                             enteredBy: r.enteredBy || null, zones: r.zones || []
                         });
@@ -1118,34 +1339,7 @@ const firebaseConfig = {
                     }
                     showToast('Imported ' + count + ' reading(s)!');
                 } catch (err) {
-                    try {
-                        const lines = e.target.result.split('\n').filter(l => l.trim());
-                        if (lines.length < 2) { showToast('CSV file appears empty.'); return; }
-                        let count = 0;
-                        for (const line of lines.slice(1)) {
-                            const vals = line.split(',');
-                            if (vals.length < 9) continue;
-                            const type = (vals[2] || '').trim().toLowerCase();
-                            const zonesArr = [];
-                            zones.forEach((zn, idx) => {
-                                const v = parseFloat(vals[idx + 3]);
-                                if (!isNaN(v)) {
-                                    const entry = { name: zn, tdr: { readings: [], average: null }, shear: { readings: [], average: null } };
-                                    if (type === 'shear') entry.shear = { readings: [v], average: v };
-                                    else entry.tdr = { readings: [v], average: v };
-                                    zonesArr.push(entry);
-                                }
-                            });
-                            if (zonesArr.length > 0) {
-                                await addDoc(collection(db, "moistureReadings"), {
-                                    timestamp: Timestamp.now(), date: vals[0].replace(/"/g, ''),
-                                    enteredBy: vals[1].replace(/"/g, '') || null, zones: zonesArr
-                                });
-                                count++;
-                            }
-                        }
-                        showToast('Imported ' + count + ' reading(s) from CSV!');
-                    } catch (csvErr) { showToast('Error reading file.'); }
+                    showToast('Error reading file.');
                 }
             };
             reader.readAsText(file);
@@ -1163,7 +1357,7 @@ const firebaseConfig = {
         }
 
         // ================================================================
-        //  WIRE UP BUTTONS (addEventListener — works with module scope)
+        //  WIRE UP BUTTONS
         // ================================================================
         document.getElementById('clearBtn').addEventListener('click', () => clearForm());
         document.getElementById('submitBtn').addEventListener('click', () => {
@@ -1185,13 +1379,6 @@ const firebaseConfig = {
         document.getElementById('resetFilterBtn').addEventListener('click', () => resetDateFilter());
         document.getElementById('chartTabTdr').addEventListener('click', () => switchChart('tdr'));
         document.getElementById('chartTabShear').addEventListener('click', () => switchChart('shear'));
-
-        // ================================================================
-        //  BOOT
-        // ================================================================
-        initializeZoneGrid();
-        listenForReadings();
-        checkForExistingDraft();
     </script>
 </body>
 </html>
