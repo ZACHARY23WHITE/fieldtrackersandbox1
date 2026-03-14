@@ -101,7 +101,6 @@
             background-color: var(--color-background);
             color: var(--color-text);
             line-height: 1.6;
-            /* Safe area insets for iPhone notch/home indicator */
             padding-bottom: env(safe-area-inset-bottom);
         }
 
@@ -168,9 +167,16 @@
             letter-spacing: 0.05em;
         }
 
+        /* Wrapper for input + clear button */
+        .login-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
         .login-field input {
             width: 100%;
-            padding: 12px 14px;
+            padding: 12px 38px 12px 14px; /* right padding leaves room for ✕ */
             border: 1px solid var(--color-border);
             border-radius: 8px;
             background: var(--color-background);
@@ -183,6 +189,34 @@
         .login-field input:focus {
             outline: 2px solid var(--color-primary);
             border-color: var(--color-primary);
+        }
+
+        /* Clear (✕) button inside input */
+        .login-clear-btn {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            display: none;          /* hidden until field has content */
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text-secondary);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 14px;
+            line-height: 1;
+            transition: background 0.15s, color 0.15s;
+            flex-shrink: 0;
+        }
+        .login-clear-btn:hover {
+            background: var(--color-secondary);
+            color: var(--color-text);
+        }
+        .login-clear-btn.visible {
+            display: flex;
         }
 
         .login-btn {
@@ -470,7 +504,7 @@
         .chart-tooltip.show { opacity: 1; }
 
         .toast {
-            position: fixed; bottom: 24px; right: 24px;
+            position: fixed; right: 24px;
             background-color: var(--color-primary); color: var(--color-btn-primary-text);
             padding: var(--space-16) var(--space-20); border-radius: var(--radius-base);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -501,11 +535,17 @@
 
             <div class="login-field">
                 <label for="loginEmail">Email</label>
-                <input type="email" id="loginEmail" placeholder="you@team.com" autocomplete="email">
+                <div class="login-input-wrapper">
+                    <input type="email" id="loginEmail" placeholder="you@team.com" autocomplete="email">
+                    <button class="login-clear-btn" id="clearEmailBtn" tabindex="-1" aria-label="Clear email">&times;</button>
+                </div>
             </div>
             <div class="login-field">
                 <label for="loginPassword">Password</label>
-                <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+                <div class="login-input-wrapper">
+                    <input type="password" id="loginPassword" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" autocomplete="current-password">
+                    <button class="login-clear-btn" id="clearPasswordBtn" tabindex="-1" aria-label="Clear password">&times;</button>
+                </div>
             </div>
 
             <button class="login-btn" id="loginBtn">Login</button>
@@ -713,6 +753,41 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // ================================================================
+        //  LOGIN CLEAR BUTTONS
+        // ================================================================
+        function setupClearButton(inputId, btnId) {
+            const input = document.getElementById(inputId);
+            const btn = document.getElementById(btnId);
+
+            // Show/hide ✕ based on whether the field has content
+            input.addEventListener('input', () => {
+                btn.classList.toggle('visible', input.value.length > 0);
+            });
+
+            // Tapping ✕ clears the field and hides itself
+            btn.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // prevent input from losing focus weirdly
+                input.value = '';
+                btn.classList.remove('visible');
+                input.focus();
+            });
+
+            // Also handle touch (mobile)
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                input.value = '';
+                btn.classList.remove('visible');
+                input.focus();
+            });
+        }
+
+        setupClearButton('loginEmail', 'clearEmailBtn');
+        setupClearButton('loginPassword', 'clearPasswordBtn');
+
+        // ================================================================
+        //  CONFIG
+        // ================================================================
         const zones = [
             'Left Field', 'Center Field', 'Right Field',
             '1st Base Line', '3rd Base Line', 'Infield'
