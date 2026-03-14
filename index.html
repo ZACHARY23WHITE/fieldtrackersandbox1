@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baseball Field Moisture Tracker</title>
+
+ <!-- App icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png">
+<link rel="icon" type="image/png" sizes="192x192" href="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png">
+
+
+
+
+    
+    <style>
+        :root {
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-cream-100: rgba(255, 255, 253, 1);
+            --color-gray-200: rgba(245, 245, 245, 1);
+            --color-gray-300: rgba(167, 169, 169, 1);
+            --color-slate-500: rgba(98, 108, 113, 1);
+            --color-brown-600: rgba(94, 82, 64, 1);
+            --color-charcoal-700: rgba(31, 33, 33, 1);
+            --color-charcoal-800: rgba(38, 40, 40, 1);
+            --color-slate-900: rgba(19, 52, 59, 1);
+            --color-teal-300: rgba(50, 184, 198, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-teal-700: rgba(26, 104, 115, 1);
+            --color-brown-600-rgb: 94, 82, 64;
+            --color-teal-500-rgb: 33, 128, 141;
+            --color-slate-900-rgb: 19, 52, 59;
+            --color-background: var(--color-cream-50);
+            --color-surface: var(--color-cream-100);
+            --color-text: var(--color-slate-900);
+            --color-text-secondary: var(--color-slate-500);
+            --color-primary: var(--color-teal-500);
+            --color-primary-hover: var(--color-teal-600);
+            --color-primary-active: var(--color-teal-700);
+            --color-border: rgba(var(--color-brown-600-rgb), 0.2);
+            --color-btn-primary-text: var(--color-cream-50);
+            --color-secondary: rgba(var(--color-brown-600-rgb), 0.12);
+            --color-secondary-hover: rgba(var(--color-brown-600-rgb), 0.2);
+            --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --radius-base: 8px;
+            --radius-lg: 12px;
+
+            --tdr-bg: rgba(33, 128, 80, 0.10);
+            --tdr-accent: #1a7a42;
+            --tdr-text: #15603a;
+            --tdr-border: rgba(33, 128, 80, 0.25);
+            --shear-bg: rgba(180, 50, 50, 0.08);
+            --shear-accent: #a83232;
+            --shear-text: #8b2020;
+            --shear-border: rgba(180, 50, 50, 0.25);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-gray-200-rgb: 245, 245, 245;
+                --color-gray-300-rgb: 167, 169, 169;
+                --color-gray-400-rgb: 119, 124, 124;
+                --color-teal-300-rgb: 50, 184, 198;
+                --color-background: var(--color-charcoal-700);
+                --color-surface: var(--color-charcoal-800);
+                --color-text: var(--color-gray-200);
+                --color-text-secondary: rgba(var(--color-gray-300-rgb), 0.7);
+                --color-primary: var(--color-teal-300);
+                --color-border: rgba(var(--color-gray-400-rgb), 0.3);
+                --color-btn-primary-text: var(--color-slate-900);
+                --color-secondary: rgba(var(--color-gray-400-rgb), 0.15);
+                --color-secondary-hover: rgba(var(--color-gray-400-rgb), 0.25);
+
+                --tdr-bg: rgba(50, 184, 120, 0.12);
+                --tdr-accent: #4ade80;
+                --tdr-text: #6ee7a0;
+                --tdr-border: rgba(50, 184, 120, 0.3);
+                --shear-bg: rgba(255, 84, 89, 0.12);
+                --shear-accent: #ff5459;
+                --shear-text: #ff7a7e;
+                --shear-border: rgba(255, 84, 89, 0.3);
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.6;
+            padding: var(--space-20);
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        h1 { font-size: 28px; margin-bottom: var(--space-8); color: var(--color-text); }
+
+        .subtitle {
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-24);
+            font-size: 14px;
+        }
+
+        .section {
+            background-color: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-20);
+            margin-bottom: var(--space-20);
+            border: 1px solid var(--color-border);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-16);
+        }
+
+        .section-title { font-size: 18px; font-weight: 600; color: var(--color-text); }
+
+        .entered-by-wrapper { max-width: 240px; margin-bottom: var(--space-16); }
+        .entered-by-wrapper label {
+            font-size: 13px; color: var(--color-text-secondary);
+            font-weight: 500; display: block; margin-bottom: 4px;
+        }
+        .entered-by-wrapper input {
+            width: 100%; padding: 8px 12px;
+            border: 1px solid var(--color-border); border-radius: 6px;
+            background-color: var(--color-background); color: var(--color-text); font-size: 14px;
+        }
+        .entered-by-wrapper input:focus { outline: 2px solid var(--color-primary); border-color: var(--color-primary); }
+
+        .zone-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--space-16);
+            margin-bottom: var(--space-20);
+        }
+
+        .zone-card {
+            background-color: var(--color-background);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            padding: var(--space-16);
+        }
+
+        .zone-name {
+            font-weight: 600; margin-bottom: var(--space-12);
+            color: var(--color-text); font-size: 16px; text-align: center;
+            padding-bottom: var(--space-8); border-bottom: 1px solid var(--color-border);
+        }
+
+        .reading-type-section {
+            border-radius: var(--radius-base); padding: var(--space-12);
+            margin-top: var(--space-12); border: 1px solid transparent;
+        }
+        .reading-type-section.tdr { background: var(--tdr-bg); border-color: var(--tdr-border); }
+        .reading-type-section.shear { background: var(--shear-bg); border-color: var(--shear-border); }
+
+        .reading-type-label {
+            font-size: 13px; font-weight: 700; text-align: center;
+            margin-bottom: var(--space-8); padding: 3px 10px;
+            border-radius: 6px; display: block; letter-spacing: 0.04em;
+        }
+        .reading-type-label.tdr { color: var(--tdr-text); }
+        .reading-type-label.shear { color: var(--shear-text); }
+
+        .reading-inputs {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-8); margin-bottom: var(--space-8);
+        }
+
+        .reading-input { display: flex; flex-direction: column; gap: 4px; }
+        .reading-input label { font-size: 11px; color: var(--color-text-secondary); font-weight: 500; }
+        .reading-input input {
+            width: 100%; padding: 6px 8px;
+            border: 1px solid var(--color-border); border-radius: 6px;
+            background-color: var(--color-surface); color: var(--color-text); font-size: 14px;
+        }
+        .reading-input input:focus { outline: 2px solid var(--color-primary); border-color: var(--color-primary); }
+
+        .zone-average {
+            padding: var(--space-8) var(--space-12);
+            border-radius: var(--radius-base); text-align: center;
+        }
+        .zone-average.tdr { background-color: var(--tdr-bg); }
+        .zone-average.shear { background-color: var(--shear-bg); }
+
+        .zone-average-label { font-size: 11px; font-weight: 500; margin-bottom: 2px; }
+        .zone-average-label.tdr { color: var(--tdr-text); }
+        .zone-average-label.shear { color: var(--shear-text); }
+
+        .zone-average-value { font-size: 22px; font-weight: 700; }
+        .zone-average-value.tdr { color: var(--tdr-accent); }
+        .zone-average-value.shear { color: var(--shear-accent); }
+
+        .button {
+            padding: 12px 24px; border: none; border-radius: var(--radius-base);
+            font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .button-primary { background-color: var(--color-primary); color: var(--color-btn-primary-text); }
+        .button-primary:hover { background-color: var(--color-primary-hover); }
+        .button-primary:active { background-color: var(--color-primary-active); }
+        .button-secondary { background-color: var(--color-secondary); color: var(--color-text); }
+        .button-secondary:hover { background-color: var(--color-secondary-hover); }
+
+        .button-group { display: flex; gap: var(--space-12); justify-content: flex-end; flex-wrap: wrap; }
+
+        .draft-notice {
+            display: none; margin-top: var(--space-12); padding: var(--space-12);
+            background: rgba(230,138,60,0.12); border: 1px solid rgba(230,138,60,0.3);
+            border-radius: var(--radius-base); font-size: 13px; color: var(--color-text);
+            align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .draft-notice.show { display: flex; }
+        .draft-notice-btn {
+            padding: 4px 12px; border-radius: 4px; font-size: 12px;
+            font-weight: 600; cursor: pointer; border: none;
+        }
+        .draft-notice-btn.resume {
+            background: var(--color-primary); color: var(--color-btn-primary-text);
+        }
+        .draft-notice-btn.discard {
+            background: var(--color-secondary); color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+
+        /* Date range filter */
+        .date-filter {
+            background: var(--color-surface); border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border); padding: var(--space-16) var(--space-20);
+            margin-top: var(--space-24); margin-bottom: 4px;
+        }
+        .date-filter h3 { font-size: 16px; font-weight: 600; margin-bottom: var(--space-12); color: var(--color-text); }
+        .date-filter-row { display: flex; align-items: flex-end; gap: var(--space-12); flex-wrap: wrap; }
+        .date-filter-field { display: flex; flex-direction: column; gap: 4px; }
+        .date-filter-field label { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); }
+        .date-filter-field input[type="date"] {
+            padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 6px;
+            background: var(--color-background); color: var(--color-text);
+            font-size: 14px; font-family: var(--font-family-base);
+        }
+        .date-filter-field input[type="date"]:focus { outline: 2px solid var(--color-primary); border-color: var(--color-primary); }
+        .filter-btn {
+            padding: 8px 20px; border: none; border-radius: 6px;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+        }
+        .filter-btn-primary { background: var(--color-primary); color: var(--color-btn-primary-text); }
+        .filter-btn-primary:hover { background: var(--color-primary-hover); }
+        .filter-btn-secondary { background: var(--color-secondary); color: var(--color-text); }
+        .filter-btn-secondary:hover { background: var(--color-secondary-hover); }
+        .filter-info { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-8); }
+
+        /* Report tables */
+        .report-section {
+            margin-top: var(--space-24); background-color: var(--color-surface);
+            border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden;
+        }
+        .report-header {
+            padding: var(--space-12) var(--space-16); font-size: 16px; font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .report-header.tdr { background: var(--tdr-bg); color: var(--tdr-text); border-bottom: 1px solid var(--tdr-border); }
+        .report-header.shear { background: var(--shear-bg); color: var(--shear-text); border-bottom: 1px solid var(--shear-border); }
+        .report-body { overflow-x: auto; }
+        .report-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .report-table th, .report-table td {
+            padding: 8px 12px; text-align: center; border-bottom: 1px solid var(--color-border);
+        }
+        .report-table th {
+            background: var(--color-secondary); color: var(--color-text-secondary);
+            font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;
+        }
+        .report-table td:first-child { text-align: left; font-weight: 500; }
+        .report-table tbody tr:hover { background: var(--color-secondary); }
+        .report-table .avg-cell.tdr { color: var(--tdr-accent); font-weight: 700; }
+        .report-table .avg-cell.shear { color: var(--shear-accent); font-weight: 700; }
+        .report-empty { padding: var(--space-24); text-align: center; color: var(--color-text-secondary); font-size: 13px; }
+
+        /* Chart */
+        .chart-container {
+            margin-top: var(--space-24); padding: var(--space-20);
+            background-color: var(--color-surface); border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+        }
+        .chart-title { font-size: 18px; font-weight: 600; margin-bottom: var(--space-16); color: var(--color-text); }
+        .chart-tab-bar { display: flex; gap: var(--space-8); margin-bottom: var(--space-16); }
+        .chart-tab {
+            padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600;
+            cursor: pointer; border: 1px solid var(--color-border);
+            background: var(--color-background); color: var(--color-text-secondary); transition: all 0.15s;
+        }
+        .chart-tab.active { background: var(--color-primary); color: var(--color-btn-primary-text); border-color: var(--color-primary); }
+        .chart { width: 100%; height: 400px; position: relative; }
+        .chart-canvas {
+            width: 100%; height: 350px; position: relative;
+            border: 1px solid var(--color-border); border-radius: var(--radius-base);
+            background-color: var(--color-background);
+        }
+        .chart-svg { width: 100%; height: 100%; }
+        .chart-line { fill: none; stroke-width: 2.5; transition: stroke-width 0.2s; }
+        .chart-line:hover { stroke-width: 3.5; }
+        .chart-point { transition: r 0.2s; }
+        .chart-point:hover { r: 6; }
+        .chart-legend { display: flex; flex-wrap: wrap; gap: var(--space-12); justify-content: center; margin-top: var(--space-16); }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-text); }
+        .legend-color { width: 20px; height: 3px; border-radius: 2px; }
+        .chart-tooltip {
+            position: absolute; background-color: var(--color-surface);
+            border: 1px solid var(--color-border); border-radius: var(--radius-base);
+            padding: var(--space-8) var(--space-12); font-size: 12px;
+            pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .chart-tooltip.show { opacity: 1; }
+
+        .empty-state { text-align: center; padding: var(--space-24); color: var(--color-text-secondary); }
+
+        .toast {
+            position: fixed; bottom: 24px; right: 24px;
+            background-color: var(--color-primary); color: var(--color-btn-primary-text);
+            padding: var(--space-16) var(--space-20); border-radius: var(--radius-base);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0; transform: translateY(20px); transition: all 0.3s;
+            pointer-events: none; z-index: 100;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        @media (max-width: 768px) {
+            .zone-grid { grid-template-columns: 1fr; }
+            .reading-inputs { grid-template-columns: repeat(2, 1fr); }
+            .chart { height: 350px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>&#9918; Baseball Field Moisture Tracker</h1>
+        <p class="subtitle">Track TDR and Shear readings across 6 field zones with 6 subzones each</p>
+
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Moisture Readings</h2>
+            </div>
+
+            <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end; margin-bottom:var(--space-16);">
+                <div class="entered-by-wrapper" style="margin-bottom:0;">
+                    <label for="enteredBy">Entered by</label>
+                    <input type="text" id="enteredBy" placeholder="First name">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; min-width:130px;">
+                    <label for="tempHigh" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Temp High (&deg;F)</label>
+                    <input type="number" id="tempHigh" placeholder="75" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; min-width:130px;">
+                    <label for="tempLow" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Temp Low (&deg;F)</label>
+                    <input type="number" id="tempLow" placeholder="55" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; min-width:140px;">
+                    <label for="weatherCondition" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Weather Condition</label>
+                    <select id="weatherCondition" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
+                        <option value="">Select...</option>
+                        <option value="sunny">Sunny</option>
+                        <option value="cloudy">Cloudy</option>
+                        <option value="rainy">Rainy</option>
+                    </select>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; min-width:130px;">
+                    <label for="roofStatus" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Roof Status</label>
+                    <select id="roofStatus" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
+                        <option value="">Select...</option>
+                        <option value="Open">Open</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="zone-grid" id="zoneGrid"></div>
+
+            <div class="button-group">
+                <button class="button button-secondary" id="clearBtn">Clear All</button>
+                <button class="button button-secondary" id="saveDraftBtn">&#128190; Save Draft</button>
+                <button class="button button-secondary" id="exportBtn">Export CSV</button>
+                <button class="button button-secondary" id="importBtn">Import Data</button>
+                <button class="button button-primary" id="submitBtn">Submit Readings</button>
+            </div>
+            <input type="file" id="importFile" accept=".json,.csv" style="display: none;">
+
+            <div class="draft-notice" id="draftNotice">
+                &#128221; <strong>You have a saved draft.</strong>
+                <button class="draft-notice-btn resume" id="loadDraftBtn">Resume Draft</button>
+                <button class="draft-notice-btn discard" id="discardDraftBtn">Discard</button>
+            </div>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="date-filter">
+            <h3>&#128197; Report Date Range</h3>
+            <div class="date-filter-row">
+                <div class="date-filter-field">
+                    <label for="filterStart">Start Date</label>
+                    <input type="date" id="filterStart">
+                </div>
+                <div class="date-filter-field">
+                    <label for="filterEnd">End Date</label>
+                    <input type="date" id="filterEnd">
+                </div>
+                <button class="filter-btn filter-btn-primary" id="applyFilterBtn">Apply Filter</button>
+                <button class="filter-btn filter-btn-secondary" id="resetFilterBtn">Reset (Last 7 Days)</button>
+            </div>
+            <div class="filter-info" id="filterInfo">Showing last 7 days</div>
+        </div>
+
+        <!-- TDR Report -->
+        <div class="report-section">
+            <div class="report-header tdr">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                TDR Report
+            </div>
+            <div class="report-body">
+                <div class="report-empty" id="tdrEmpty">No TDR readings submitted yet.</div>
+                <table class="report-table" id="tdrReportTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">Date</th>
+                            <th style="text-align:left;">By</th>
+                            <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
+                            <th>Left Field</th><th>Center Field</th><th>Right Field</th>
+                            <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tdrReportBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Shear Report -->
+        <div class="report-section">
+            <div class="report-header shear">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Shear Report
+            </div>
+            <div class="report-body">
+                <div class="report-empty" id="shearEmpty">No Shear readings submitted yet.</div>
+                <table class="report-table" id="shearReportTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">Date</th>
+                            <th style="text-align:left;">By</th>
+                            <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
+                            <th>Left Field</th><th>Center Field</th><th>Right Field</th>
+                            <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shearReportBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="chart-container">
+            <h2 class="chart-title">Trends Over Time</h2>
+            <div class="chart-tab-bar">
+                <button class="chart-tab active" data-chart-type="tdr" id="chartTabTdr">TDR</button>
+                <button class="chart-tab" data-chart-type="shear" id="chartTabShear">Shear</button>
+            </div>
+            <div class="chart">
+                <div class="chart-canvas" id="chartCanvas">
+                    <svg class="chart-svg" id="chartSvg"></svg>
+                    <div class="chart-tooltip" id="chartTooltip"></div>
+                </div>
+                <div class="chart-legend" id="chartLegend"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        // --- Firebase imports ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            doc,
+            getDoc,
+            setDoc,
+            deleteDoc,
+            query,
+            orderBy,
+            onSnapshot,
+            Timestamp
+        } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+        // --- Firebase config ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBFmnx84dDnmUn205rBWJvKA5Y9_dPZyNM",
+            authDomain: "groundscrew-17d39.firebaseapp.com",
+            projectId: "groundscrew-17d39",
+            storageBucket: "groundscrew-17d39.firebasestorage.app",
+            messagingSenderId: "861664780343",
+            appId: "1:861664780343:web:ac491fc17e6eab25719fb2",
+            measurementId: "G-XB95M4KK65"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ================================================================
+        //  CONFIG
+        // ================================================================
+        const zones = [
+            'Left Field', 'Center Field', 'Right Field',
+            '1st Base Line', '3rd Base Line', 'Infield'
+        ];
+        const readingTypes = ['tdr', 'shear'];
+        let readingsHistory = [];
+        let activeChartType = 'tdr';
+        let customFilterStart = null;
+        let customFilterEnd = null;
+        const DRAFT_DOC_ID = 'current_draft';
+
+        // ================================================================
+        //  ZONE GRID
+        // ================================================================
+        function initializeZoneGrid() {
+            const grid = document.getElementById('zoneGrid');
+            grid.innerHTML = '';
+
+            zones.forEach((zone, zoneIndex) => {
+                const card = document.createElement('div');
+                card.className = 'zone-card';
+
+                const zoneName = document.createElement('div');
+                zoneName.className = 'zone-name';
+                zoneName.textContent = zone;
+                card.appendChild(zoneName);
+
+                readingTypes.forEach(type => {
+                    const typeSection = document.createElement('div');
+                    typeSection.className = 'reading-type-section ' + type;
+
+                    const typeLabel = document.createElement('div');
+                    typeLabel.className = 'reading-type-label ' + type;
+                    typeLabel.textContent = type.toUpperCase();
+                    typeSection.appendChild(typeLabel);
+
+                    const readingInputs = document.createElement('div');
+                    readingInputs.className = 'reading-inputs';
+
+                    for (let i = 1; i <= 6; i++) {
+                        const inputWrapper = document.createElement('div');
+                        inputWrapper.className = 'reading-input';
+
+                        const label = document.createElement('label');
+                        label.textContent = 'Zone ' + i;
+                        inputWrapper.appendChild(label);
+
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.step = '0.1';
+                        input.min = '0';
+                        input.placeholder = '0.0';
+                        input.inputMode = 'decimal';
+                        input.pattern = '[0-9]*\\.?[0-9]*';
+                        input.id = 'zone-' + zoneIndex + '-' + type + '-reading-' + i;
+                        input.addEventListener('input', () => updateZoneAverage(zoneIndex, type));
+                        inputWrapper.appendChild(input);
+
+                        readingInputs.appendChild(inputWrapper);
+                    }
+
+                    typeSection.appendChild(readingInputs);
+
+                    const averageDiv = document.createElement('div');
+                    averageDiv.className = 'zone-average ' + type;
+                    averageDiv.innerHTML =
+                        '<div class="zone-average-label ' + type + '">' + type.toUpperCase() + ' Average</div>' +
+                        '<div class="zone-average-value ' + type + '" id="avg-' + zoneIndex + '-' + type + '">--</div>';
+                    typeSection.appendChild(averageDiv);
+
+                    card.appendChild(typeSection);
+                });
+
+                grid.appendChild(card);
+            });
+        }
+
+        function updateZoneAverage(zoneIndex, type) {
+            const readings = [];
+            for (let i = 1; i <= 6; i++) {
+                const val = parseFloat(document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i).value);
+                if (!isNaN(val) && val > 0) readings.push(val);
+            }
+            const avgEl = document.getElementById('avg-' + zoneIndex + '-' + type);
+            avgEl.textContent = readings.length > 0
+                ? (readings.reduce((s, v) => s + v, 0) / readings.length).toFixed(1)
+                : '--';
+        }
+
+        // ================================================================
+        //  SUBMIT
+        // ================================================================
+        async function submitReadings() {
+            const enteredBy = document.getElementById('enteredBy').value.trim();
+            const tempHighVal = document.getElementById('tempHigh').value.trim();
+            const tempLowVal = document.getElementById('tempLow').value.trim();
+            const weatherCondition = document.getElementById('weatherCondition').value || null;
+            const roofStatus = document.getElementById('roofStatus').value || null;
+            const tempHigh = tempHighVal === '' ? null : parseFloat(tempHighVal);
+            const tempLow = tempLowVal === '' ? null : parseFloat(tempLowVal);
+
+            const reading = {
+                timestamp: Timestamp.now(),
+                date: new Date().toLocaleString(),
+                enteredBy: enteredBy || null,
+                tempHigh: isNaN(tempHigh) ? null : tempHigh,
+                tempLow: isNaN(tempLow) ? null : tempLow,
+                weatherCondition: weatherCondition,
+                roofStatus: roofStatus,
+                zones: []
+            };
+
+            let hasData = false;
+
+            zones.forEach((zone, zoneIndex) => {
+                const zoneEntry = {
+                    name: zone,
+                    tdr: { readings: [], average: null },
+                    shear: { readings: [], average: null }
+                };
+
+                readingTypes.forEach(type => {
+                    const vals = [];
+                    for (let i = 1; i <= 6; i++) {
+                        const val = parseFloat(document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i).value);
+                        if (!isNaN(val) && val > 0) { vals.push(val); hasData = true; }
+                    }
+                    zoneEntry[type].readings = vals;
+                    if (vals.length > 0) {
+                        zoneEntry[type].average = vals.reduce((s, v) => s + v, 0) / vals.length;
+                    }
+                });
+
+                reading.zones.push(zoneEntry);
+            });
+
+            if (!hasData) {
+                showToast('Please enter at least one reading before submitting.');
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, "moistureReadings"), reading);
+                showToast('Readings saved to Firebase!');
+                clearForm(false);
+                // Also discard draft if one exists
+                try { await deleteDoc(doc(db, 'drafts', DRAFT_DOC_ID)); } catch (e) { /* ignore */ }
+                showDraftNotice(false);
+            } catch (error) {
+                console.error("Error saving to Firebase:", error);
+                showToast('Error saving — check console for details.');
+            }
+        }
+
+        // ================================================================
+        //  DRAFT — SAVE / LOAD / DISCARD (Firestore)
+        // ================================================================
+        async function saveDraft() {
+            const enteredBy = document.getElementById('enteredBy').value.trim();
+            const draftData = {
+                enteredBy: enteredBy,
+                tempHigh: document.getElementById('tempHigh').value.trim(),
+                tempLow: document.getElementById('tempLow').value.trim(),
+                weatherCondition: document.getElementById('weatherCondition').value,
+                roofStatus: document.getElementById('roofStatus').value,
+                savedAt: Timestamp.now(),
+                zones: {}
+            };
+
+            zones.forEach((zone, zoneIndex) => {
+                draftData.zones[String(zoneIndex)] = {};
+                readingTypes.forEach(type => {
+                    draftData.zones[String(zoneIndex)][type] = {};
+                    for (let i = 1; i <= 6; i++) {
+                        const input = document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i);
+                        draftData.zones[String(zoneIndex)][type][String(i)] = input.value || '';
+                    }
+                });
+            });
+
+            try {
+                const draftRef = doc(db, 'drafts', DRAFT_DOC_ID);
+                await setDoc(draftRef, draftData);
+                showDraftNotice(true);
+                showToast('Draft saved to Firebase! You can close and come back later.');
+            } catch (error) {
+                console.error('Error saving draft:', error);
+                showToast('Error saving draft — check console.');
+            }
+        }
+
+        async function loadDraft() {
+            try {
+                const draftRef = doc(db, 'drafts', DRAFT_DOC_ID);
+                const snap = await getDoc(draftRef);
+                if (!snap.exists()) {
+                    showToast('No draft found.');
+                    return;
+                }
+                const d = snap.data();
+                document.getElementById('enteredBy').value = d.enteredBy || '';
+                document.getElementById('tempHigh').value = d.tempHigh || '';
+                document.getElementById('tempLow').value = d.tempLow || '';
+                document.getElementById('weatherCondition').value = d.weatherCondition || '';
+                document.getElementById('roofStatus').value = d.roofStatus || '';
+
+                zones.forEach((zone, zoneIndex) => {
+                    readingTypes.forEach(type => {
+                        for (let i = 1; i <= 6; i++) {
+                            const input = document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i);
+                            const val = d.zones?.[String(zoneIndex)]?.[type]?.[String(i)] || '';
+                            input.value = val;
+                        }
+                        updateZoneAverage(zoneIndex, type);
+                    });
+                });
+
+                showToast('Draft restored! Continue where you left off.');
+            } catch (error) {
+                console.error('Error loading draft:', error);
+                showToast('Error loading draft — check console.');
+            }
+        }
+
+        async function discardDraft() {
+            try {
+                const draftRef = doc(db, 'drafts', DRAFT_DOC_ID);
+                await deleteDoc(draftRef);
+                showDraftNotice(false);
+                showToast('Draft discarded.');
+            } catch (error) {
+                console.error('Error discarding draft:', error);
+                showToast('Error discarding draft — check console.');
+            }
+        }
+
+        function showDraftNotice(show) {
+            const el = document.getElementById('draftNotice');
+            if (show) { el.classList.add('show'); } else { el.classList.remove('show'); }
+        }
+
+        async function checkForExistingDraft() {
+            try {
+                const draftRef = doc(db, 'drafts', DRAFT_DOC_ID);
+                const snap = await getDoc(draftRef);
+                if (snap.exists()) {
+                    const d = snap.data();
+                    // Only show notice if it has real zone data (not just the placeholder)
+                    if (d.zones) { showDraftNotice(true); }
+                }
+            } catch (e) {
+                console.error('Error checking for draft:', e);
+            }
+        }
+
+        // ================================================================
+        //  CLEAR FORM
+        // ================================================================
+        function clearForm(notify) {
+            zones.forEach((zone, zoneIndex) => {
+                readingTypes.forEach(type => {
+                    for (let i = 1; i <= 6; i++) {
+                        document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i).value = '';
+                    }
+                    updateZoneAverage(zoneIndex, type);
+                });
+            });
+            document.getElementById('enteredBy').value = '';
+            document.getElementById('tempHigh').value = '';
+            document.getElementById('tempLow').value = '';
+            document.getElementById('weatherCondition').value = '';
+            document.getElementById('roofStatus').value = '';
+            if (notify !== false) showToast('Form cleared.');
+        }
+
+        // ================================================================
+        //  REAL-TIME LISTENER
+        // ================================================================
+        function listenForReadings() {
+            const q = query(collection(db, "moistureReadings"), orderBy("timestamp", "asc"));
+
+            onSnapshot(q, (snapshot) => {
+                readingsHistory = [];
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    readingsHistory.push({
+                        id: docSnap.id,
+                        date: data.date || data.timestamp?.toDate().toLocaleString() || 'Unknown',
+                        enteredBy: data.enteredBy || null,
+                        tempHigh: data.tempHigh ?? null,
+                        tempLow: data.tempLow ?? null,
+                        weatherCondition: data.weatherCondition || null,
+                        roofStatus: data.roofStatus || null,
+                        zones: data.zones || []
+                    });
+                });
+                readingsHistory.reverse();
+                updateChart();
+                updateReportTables();
+            }, (error) => {
+                console.error("Firestore listener error:", error);
+                showToast('Error loading data from Firebase.');
+            });
+        }
+
+        // ================================================================
+        //  REPORT TABLES (with date filtering)
+        // ================================================================
+        function parseReadingDate(dateStr) {
+            const d = new Date(dateStr);
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        function getFilteredReadings() {
+            const now = new Date();
+            let startDate, endDate;
+            if (customFilterStart && customFilterEnd) {
+                startDate = new Date(customFilterStart + 'T00:00:00');
+                endDate = new Date(customFilterEnd + 'T23:59:59');
+            } else {
+                endDate = now;
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 7);
+                startDate.setHours(0, 0, 0, 0);
+            }
+            return readingsHistory.filter(r => {
+                const d = parseReadingDate(r.date);
+                return d && d >= startDate && d <= endDate;
+            });
+        }
+
+        function applyDateFilter() {
+            const s = document.getElementById('filterStart').value;
+            const e = document.getElementById('filterEnd').value;
+            if (!s || !e) { showToast('Please select both a start and end date.'); return; }
+            if (s > e) { showToast('Start date must be before end date.'); return; }
+            customFilterStart = s;
+            customFilterEnd = e;
+            document.getElementById('filterInfo').textContent = 'Showing ' + s + ' to ' + e;
+            updateReportTables();
+        }
+
+        function resetDateFilter() {
+            customFilterStart = null;
+            customFilterEnd = null;
+            document.getElementById('filterStart').value = '';
+            document.getElementById('filterEnd').value = '';
+            document.getElementById('filterInfo').textContent = 'Showing last 7 days';
+            updateReportTables();
+        }
+
+        function escapeHTML(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+
+        function updateReportTables() {
+            const tdrBody = document.getElementById('tdrReportBody');
+            const shearBody = document.getElementById('shearReportBody');
+            tdrBody.innerHTML = '';
+            shearBody.innerHTML = '';
+
+            const filtered = getFilteredReadings();
+            let hasTdr = false, hasShear = false;
+
+            filtered.forEach(reading => {
+                const weatherCells = '<td>' + escapeHTML(reading.tempHigh != null ? String(reading.tempHigh) : '\u2014') + '</td>'
+                    + '<td>' + escapeHTML(reading.tempLow != null ? String(reading.tempLow) : '\u2014') + '</td>'
+                    + '<td>' + escapeHTML(reading.weatherCondition || '\u2014') + '</td>'
+                    + '<td>' + escapeHTML(reading.roofStatus || '\u2014') + '</td>';
+
+                let tdrRow = '<tr><td style="text-align:left;">' + escapeHTML(reading.date) + '</td>';
+                tdrRow += '<td style="text-align:left;">' + escapeHTML(reading.enteredBy || '\u2014') + '</td>';
+                tdrRow += weatherCells;
+                let shearRow = '<tr><td style="text-align:left;">' + escapeHTML(reading.date) + '</td>';
+                shearRow += '<td style="text-align:left;">' + escapeHTML(reading.enteredBy || '\u2014') + '</td>';
+                shearRow += weatherCells;
+
+                let rowHasTdr = false, rowHasShear = false;
+
+                zones.forEach(zoneName => {
+                    const zd = reading.zones.find(z => z.name === zoneName);
+
+                    if (zd && zd.tdr && zd.tdr.average != null) {
+                        tdrRow += '<td class="avg-cell tdr">' + zd.tdr.average.toFixed(1) + '</td>';
+                        rowHasTdr = true;
+                    } else if (zd && typeof zd.average === 'number') {
+                        tdrRow += '<td>' + zd.average.toFixed(1) + '</td>';
+                        rowHasTdr = true;
+                    } else {
+                        tdrRow += '<td>\u2014</td>';
+                    }
+
+                    if (zd && zd.shear && zd.shear.average != null) {
+                        shearRow += '<td class="avg-cell shear">' + zd.shear.average.toFixed(1) + '</td>';
+                        rowHasShear = true;
+                    } else {
+                        shearRow += '<td>\u2014</td>';
+                    }
+                });
+
+                tdrRow += '</tr>';
+                shearRow += '</tr>';
+
+                if (rowHasTdr) { tdrBody.innerHTML += tdrRow; hasTdr = true; }
+                if (rowHasShear) { shearBody.innerHTML += shearRow; hasShear = true; }
+            });
+
+            document.getElementById('tdrEmpty').style.display = hasTdr ? 'none' : 'block';
+            document.getElementById('tdrReportTable').style.display = hasTdr ? 'table' : 'none';
+            document.getElementById('shearEmpty').style.display = hasShear ? 'none' : 'block';
+            document.getElementById('shearReportTable').style.display = hasShear ? 'table' : 'none';
+        }
+
+        // ================================================================
+        //  CHART
+        // ================================================================
+        const zoneColors = ['#2D74A6', '#E68A3C', '#4CAF50', '#9C27B0', '#F44336', '#00BCD4'];
+
+        function switchChart(type) {
+            activeChartType = type;
+            document.querySelectorAll('.chart-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.chartType === type);
+            });
+            updateChart();
+        }
+
+        function updateChart() {
+            const chartSvg = document.getElementById('chartSvg');
+            const chartLegend = document.getElementById('chartLegend');
+
+            if (readingsHistory.length === 0) {
+                chartSvg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--color-text-secondary)" font-size="14">No data to display</text>';
+                chartLegend.innerHTML = '';
+                return;
+            }
+
+            const chronological = [...readingsHistory].reverse();
+            const zoneData = {};
+            zones.forEach(z => { zoneData[z] = []; });
+
+            chronological.forEach((reading, index) => {
+                reading.zones.forEach(zone => {
+                    let avg = null;
+                    if (zone[activeChartType] && zone[activeChartType].average != null) {
+                        avg = zone[activeChartType].average;
+                    } else if (activeChartType === 'tdr' && typeof zone.average === 'number') {
+                        avg = zone.average;
+                    }
+                    if (avg !== null) {
+                        zoneData[zone.name].push({ index, value: avg, date: reading.date });
+                    }
+                });
+            });
+
+            let allValues = [];
+            Object.values(zoneData).forEach(data => { allValues = allValues.concat(data.map(d => d.value)); });
+
+            if (allValues.length === 0) {
+                chartSvg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--color-text-secondary)" font-size="14">No ' + activeChartType.toUpperCase() + ' data to display</text>';
+                chartLegend.innerHTML = '';
+                return;
+            }
+
+            const padding = { top: 20, right: 20, bottom: 40, left: 50 };
+            const svgW = chartSvg.clientWidth || 800;
+            const svgH = chartSvg.clientHeight || 350;
+            const cW = svgW - padding.left - padding.right;
+            const cH = svgH - padding.top - padding.bottom;
+            const minV = Math.min(...allValues);
+            const maxV = Math.max(...allValues);
+            const range = maxV - minV || 1;
+
+            chartSvg.innerHTML = '';
+
+            for (let i = 0; i <= 5; i++) {
+                const y = padding.top + (cH / 5) * i;
+                const val = maxV - (range / 5) * i;
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', padding.left); line.setAttribute('y1', y);
+                line.setAttribute('x2', svgW - padding.right); line.setAttribute('y2', y);
+                line.setAttribute('stroke', 'var(--color-border)'); line.setAttribute('stroke-width', '1'); line.setAttribute('opacity', '0.3');
+                chartSvg.appendChild(line);
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', padding.left - 10); text.setAttribute('y', y + 4);
+                text.setAttribute('text-anchor', 'end'); text.setAttribute('fill', 'var(--color-text-secondary)'); text.setAttribute('font-size', '11');
+                text.textContent = val.toFixed(1);
+                chartSvg.appendChild(text);
+            }
+
+            chronological.forEach((reading, index) => {
+                const x = padding.left + (cW / (chronological.length - 1 || 1)) * index;
+                const shortDate = new Date(reading.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', x); text.setAttribute('y', svgH - padding.bottom + 20);
+                text.setAttribute('text-anchor', 'middle'); text.setAttribute('fill', 'var(--color-text-secondary)'); text.setAttribute('font-size', '11');
+                text.textContent = shortDate;
+                chartSvg.appendChild(text);
+            });
+
+            Object.keys(zoneData).forEach((zoneName, zi) => {
+                const data = zoneData[zoneName];
+                if (!data.length) return;
+                const color = zoneColors[zi % zoneColors.length];
+                let pathD = '';
+                data.forEach((pt, i) => {
+                    const x = padding.left + (cW / (chronological.length - 1 || 1)) * pt.index;
+                    const y = padding.top + cH - ((pt.value - minV) / range) * cH;
+                    pathD += (i === 0 ? 'M ' : ' L ') + x + ' ' + y;
+                });
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', pathD); path.setAttribute('class', 'chart-line'); path.setAttribute('stroke', color);
+                chartSvg.appendChild(path);
+
+                data.forEach(pt => {
+                    const x = padding.left + (cW / (chronological.length - 1 || 1)) * pt.index;
+                    const y = padding.top + cH - ((pt.value - minV) / range) * cH;
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', x); circle.setAttribute('cy', y); circle.setAttribute('r', '4');
+                    circle.setAttribute('fill', color); circle.setAttribute('class', 'chart-point'); circle.style.cursor = 'pointer';
+                    circle.addEventListener('mouseenter', (e) => {
+                        const tip = document.getElementById('chartTooltip');
+                        tip.innerHTML = '<strong>' + zoneName + ' (' + activeChartType.toUpperCase() + ')</strong><br>' + pt.date + '<br>Value: ' + pt.value.toFixed(1);
+                        tip.style.left = (e.pageX + 10) + 'px'; tip.style.top = (e.pageY - 40) + 'px';
+                        tip.classList.add('show');
+                    });
+                    circle.addEventListener('mouseleave', () => { document.getElementById('chartTooltip').classList.remove('show'); });
+                    chartSvg.appendChild(circle);
+                });
+            });
+
+            chartLegend.innerHTML = '';
+            zones.forEach((zone, i) => {
+                const item = document.createElement('div'); item.className = 'legend-item';
+                const cb = document.createElement('div'); cb.className = 'legend-color'; cb.style.backgroundColor = zoneColors[i % zoneColors.length];
+                const lbl = document.createElement('span'); lbl.textContent = zone;
+                item.appendChild(cb); item.appendChild(lbl); chartLegend.appendChild(item);
+            });
+        }
+
+        // ================================================================
+        //  EXPORT CSV
+        // ================================================================
+        function exportData() {
+            if (readingsHistory.length === 0) { showToast('No data to export.'); return; }
+            try {
+                let csv = 'Date,Entered By,Type,Left Field,Center Field,Right Field,1st Base Line,3rd Base Line,Infield\n';
+                readingsHistory.forEach(reading => {
+                    const base = ['"' + reading.date + '"', '"' + (reading.enteredBy || '') + '"'];
+                    // TDR row
+                    const tdrRow = [...base, 'TDR'];
+                    zones.forEach(zn => {
+                        const z = reading.zones.find(zz => zz.name === zn);
+                        if (z && z.tdr && z.tdr.average != null) tdrRow.push(z.tdr.average.toFixed(1));
+                        else if (z && typeof z.average === 'number') tdrRow.push(z.average.toFixed(1));
+                        else tdrRow.push('');
+                    });
+                    csv += tdrRow.join(',') + '\n';
+                    // Shear row
+                    const shearRow = [...base, 'Shear'];
+                    zones.forEach(zn => {
+                        const z = reading.zones.find(zz => zz.name === zn);
+                        if (z && z.shear && z.shear.average != null) shearRow.push(z.shear.average.toFixed(1));
+                        else shearRow.push('');
+                    });
+                    csv += shearRow.join(',') + '\n';
+                });
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'baseball-field-readings-' + new Date().toISOString().split('T')[0] + '.csv';
+                document.body.appendChild(link);
+                setTimeout(() => { link.click(); setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 100); }, 10);
+                showToast('Exporting ' + readingsHistory.length + ' reading(s)...');
+            } catch (error) { console.error('Export error:', error); showToast('Error exporting.'); }
+        }
+
+        // ================================================================
+        //  IMPORT
+        // ================================================================
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (!Array.isArray(imported)) { showToast('Invalid file format.'); return; }
+                    let count = 0;
+                    for (const r of imported) {
+                        await addDoc(collection(db, "moistureReadings"), {
+                            timestamp: Timestamp.now(), date: r.date || new Date().toLocaleString(),
+                            enteredBy: r.enteredBy || null, zones: r.zones || []
+                        });
+                        count++;
+                    }
+                    showToast('Imported ' + count + ' reading(s)!');
+                } catch (err) {
+                    try {
+                        const lines = e.target.result.split('\n').filter(l => l.trim());
+                        if (lines.length < 2) { showToast('CSV file appears empty.'); return; }
+                        let count = 0;
+                        for (const line of lines.slice(1)) {
+                            const vals = line.split(',');
+                            if (vals.length < 9) continue;
+                            const type = (vals[2] || '').trim().toLowerCase();
+                            const zonesArr = [];
+                            zones.forEach((zn, idx) => {
+                                const v = parseFloat(vals[idx + 3]);
+                                if (!isNaN(v)) {
+                                    const entry = { name: zn, tdr: { readings: [], average: null }, shear: { readings: [], average: null } };
+                                    if (type === 'shear') entry.shear = { readings: [v], average: v };
+                                    else entry.tdr = { readings: [v], average: v };
+                                    zonesArr.push(entry);
+                                }
+                            });
+                            if (zonesArr.length > 0) {
+                                await addDoc(collection(db, "moistureReadings"), {
+                                    timestamp: Timestamp.now(), date: vals[0].replace(/"/g, ''),
+                                    enteredBy: vals[1].replace(/"/g, '') || null, zones: zonesArr
+                                });
+                                count++;
+                            }
+                        }
+                        showToast('Imported ' + count + ' reading(s) from CSV!');
+                    } catch (csvErr) { showToast('Error reading file.'); }
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // ================================================================
+        //  TOAST
+        // ================================================================
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        // ================================================================
+        //  WIRE UP BUTTONS (addEventListener — works with module scope)
+        // ================================================================
+        document.getElementById('clearBtn').addEventListener('click', () => clearForm());
+        document.getElementById('submitBtn').addEventListener('click', () => {
+            submitReadings().catch(err => { console.error(err); showToast('Error submitting.'); });
+        });
+        document.getElementById('saveDraftBtn').addEventListener('click', () => {
+            saveDraft().catch(err => { console.error(err); showToast('Error saving draft.'); });
+        });
+        document.getElementById('loadDraftBtn').addEventListener('click', () => {
+            loadDraft().catch(err => { console.error(err); showToast('Error loading draft.'); });
+        });
+        document.getElementById('discardDraftBtn').addEventListener('click', () => {
+            discardDraft().catch(err => { console.error(err); showToast('Error discarding draft.'); });
+        });
+        document.getElementById('exportBtn').addEventListener('click', () => exportData());
+        document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+        document.getElementById('importFile').addEventListener('change', (e) => importData(e));
+        document.getElementById('applyFilterBtn').addEventListener('click', () => applyDateFilter());
+        document.getElementById('resetFilterBtn').addEventListener('click', () => resetDateFilter());
+        document.getElementById('chartTabTdr').addEventListener('click', () => switchChart('tdr'));
+        document.getElementById('chartTabShear').addEventListener('click', () => switchChart('shear'));
+
+        // ================================================================
+        //  BOOT
+        // ================================================================
+        initializeZoneGrid();
+        listenForReadings();
+        checkForExistingDraft();
+    </script>
+</body>
+</html>
