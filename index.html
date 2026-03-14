@@ -486,8 +486,8 @@
             <div class="login-subtitle">Field Moisture &amp; Shear Tracker</div>
 
             <div class="login-field">
-                <label for="loginEmail">Team Email</label>
-                <input type="email" id="loginEmail" placeholder="team@example.com" autocomplete="email">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" placeholder="you@team.com" autocomplete="email">
             </div>
             <div class="login-field">
                 <label for="loginPassword">Password</label>
@@ -505,7 +505,7 @@
 
             <div class="app-topbar">
                 <div class="app-topbar-left">
-                    <h1>&#9918; Baseball Field Moisture Tracker Sandbox</h1>
+                    <h1>&#9918; Baseball Field Moisture Tracker</h1>
                     <p class="subtitle">Track TDR and Shear readings across field zones</p>
                 </div>
                 <div class="user-badge">
@@ -702,34 +702,64 @@
         let activeChartType = 'tdr';
         let customFilterStart = null;
         let customFilterEnd = null;
-        let currentUser = null;
+        let currentUser = null;       // Firebase Auth user
+        let currentTeamId = null;     // teamId from users/{uid} doc
+        let currentUserName = null;   // display name from users/{uid} doc
         let unsubscribeReadings = null;
         const DRAFT_DOC_ID = 'current_draft';
 
         // ================================================================
-        //  HELPERS: per-user Firestore paths
+        //  HELPERS: paths scoped to team
         // ================================================================
         function readingsCol() {
-            return collection(db, 'teams', currentUser.uid, 'moistureReadings');
+            return collection(db, 'teams', currentTeamId, 'moistureReadings');
         }
         function draftDocRef() {
-            return doc(db, 'teams', currentUser.uid, 'drafts', DRAFT_DOC_ID);
+            return doc(db, 'teams', currentTeamId, 'drafts', DRAFT_DOC_ID);
         }
 
         // ================================================================
-        //  AUTH STATE
+        //  AUTH STATE — look up teamId after login
         // ================================================================
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
+
+                // Look up this user's team profile
+                let teamId = null;
+                let displayName = user.email;
+                try {
+                    const userSnap = await getDoc(doc(db, 'users', user.uid));
+                    if (userSnap.exists()) {
+                        teamId = userSnap.data().teamId || null;
+                        displayName = userSnap.data().name || user.email;
+                    }
+                } catch (e) {
+                    console.error('Error reading user profile:', e);
+                }
+
+                if (!teamId) {
+                    showToastLogin('No team assigned to this account. Contact your admin.');
+                    await signOut(auth);
+                    return;
+                }
+
+                currentTeamId = teamId;
+                currentUserName = displayName;
+
+                document.getElementById('userEmailDisplay').textContent =
+                    displayName + ' \u2014 ' + teamId;
+
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
-                document.getElementById('userEmailDisplay').textContent = user.email;
                 initializeZoneGrid();
                 listenForReadings();
                 checkForExistingDraft();
+
             } else {
                 currentUser = null;
+                currentTeamId = null;
+                currentUserName = null;
                 if (unsubscribeReadings) { unsubscribeReadings(); unsubscribeReadings = null; }
                 readingsHistory = [];
                 document.getElementById('loginScreen').style.display = 'flex';
@@ -758,7 +788,6 @@
             }
         });
 
-        // Allow pressing Enter to submit login
         document.getElementById('loginPassword').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') document.getElementById('loginBtn').click();
         });
@@ -767,6 +796,13 @@
             await signOut(auth);
             showToast('Logged out successfully.');
         });
+
+        // Show a toast while still on the login screen
+        function showToastLogin(msg) {
+            const errEl = document.getElementById('loginError');
+            errEl.textContent = msg;
+            errEl.style.display = 'block';
+        }
 
         // ================================================================
         //  ZONE GRID
@@ -849,7 +885,7 @@
         //  SUBMIT
         // ================================================================
         async function submitReadings() {
-            if (!currentUser) { showToast('Please log in first.'); return; }
+            if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
 
             const enteredBy = document.getElementById('enteredBy').value.trim();
             const tempHighVal = document.getElementById('tempHigh').value.trim();
@@ -915,7 +951,7 @@
         //  DRAFT — SAVE / LOAD / DISCARD
         // ================================================================
         async function saveDraft() {
-            if (!currentUser) { showToast('Please log in first.'); return; }
+            if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
             const draftData = {
                 enteredBy: document.getElementById('enteredBy').value.trim(),
                 tempHigh: document.getElementById('tempHigh').value.trim(),
@@ -948,7 +984,7 @@
         }
 
         async function loadDraft() {
-            if (!currentUser) return;
+            if (!currentUser || !currentTeamId) return;
             try {
                 const snap = await getDoc(draftDocRef());
                 if (!snap.exists()) { showToast('No draft found.'); return; }
@@ -977,7 +1013,7 @@
         }
 
         async function discardDraft() {
-            if (!currentUser) return;
+            if (!currentUser || !currentTeamId) return;
             try {
                 await deleteDoc(draftDocRef());
                 showDraftNotice(false);
@@ -994,7 +1030,7 @@
         }
 
         async function checkForExistingDraft() {
-            if (!currentUser) return;
+            if (!currentUser || !currentTeamId) return;
             try {
                 const snap = await getDoc(draftDocRef());
                 if (snap.exists() && snap.data().zones) { showDraftNotice(true); }
@@ -1321,7 +1357,7 @@
         //  IMPORT
         // ================================================================
         function importData(event) {
-            if (!currentUser) { showToast('Please log in first.'); return; }
+            if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
