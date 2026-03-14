@@ -2,8 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baseball Field Moisture Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>GroundsCrew Field Tracker</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#21808d">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="GroundsCrew">
+    <meta name="description" content="Track TDR and Shear moisture readings across baseball field zones">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
 
     <!-- App icons -->
     <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png">
@@ -90,6 +101,8 @@
             background-color: var(--color-background);
             color: var(--color-text);
             line-height: 1.6;
+            /* Safe area insets for iPhone notch/home indicator */
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         /* ===================== LOGIN SCREEN ===================== */
@@ -463,6 +476,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             opacity: 0; transform: translateY(20px); transition: all 0.3s;
             pointer-events: none; z-index: 100; font-family: var(--font-family-base);
+            bottom: calc(24px + env(safe-area-inset-bottom));
         }
         .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
@@ -676,6 +690,15 @@
             Timestamp
         } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/fieldtrackersandbox1/sw.js')
+                    .then(reg => console.log('SW registered:', reg.scope))
+                    .catch(err => console.log('SW registration failed:', err));
+            });
+        }
+
         const firebaseConfig = {
             apiKey: "AIzaSyABg24W2TQ1QzgLCFgK1YrGdSW7GCHR65k",
             authDomain: "fieldtrackersandbox1.firebaseapp.com",
@@ -690,9 +713,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // ================================================================
-        //  CONFIG
-        // ================================================================
         const zones = [
             'Left Field', 'Center Field', 'Right Field',
             '1st Base Line', '3rd Base Line', 'Infield'
@@ -702,15 +722,12 @@
         let activeChartType = 'tdr';
         let customFilterStart = null;
         let customFilterEnd = null;
-        let currentUser = null;       // Firebase Auth user
-        let currentTeamId = null;     // teamId from users/{uid} doc
-        let currentUserName = null;   // display name from users/{uid} doc
+        let currentUser = null;
+        let currentTeamId = null;
+        let currentUserName = null;
         let unsubscribeReadings = null;
         const DRAFT_DOC_ID = 'current_draft';
 
-        // ================================================================
-        //  HELPERS: paths scoped to team
-        // ================================================================
         function readingsCol() {
             return collection(db, 'teams', currentTeamId, 'moistureReadings');
         }
@@ -718,14 +735,9 @@
             return doc(db, 'teams', currentTeamId, 'drafts', DRAFT_DOC_ID);
         }
 
-        // ================================================================
-        //  AUTH STATE — look up teamId after login
-        // ================================================================
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-
-                // Look up this user's team profile
                 let teamId = null;
                 let displayName = user.email;
                 try {
@@ -737,29 +749,21 @@
                 } catch (e) {
                     console.error('Error reading user profile:', e);
                 }
-
                 if (!teamId) {
                     showToastLogin('No team assigned to this account. Contact your admin.');
                     await signOut(auth);
                     return;
                 }
-
                 currentTeamId = teamId;
                 currentUserName = displayName;
-
-                document.getElementById('userEmailDisplay').textContent =
-                    displayName + ' \u2014 ' + teamId;
-
+                document.getElementById('userEmailDisplay').textContent = displayName + ' — ' + teamId;
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
                 initializeZoneGrid();
                 listenForReadings();
                 checkForExistingDraft();
-
             } else {
-                currentUser = null;
-                currentTeamId = null;
-                currentUserName = null;
+                currentUser = null; currentTeamId = null; currentUserName = null;
                 if (unsubscribeReadings) { unsubscribeReadings(); unsubscribeReadings = null; }
                 readingsHistory = [];
                 document.getElementById('loginScreen').style.display = 'flex';
@@ -767,24 +771,16 @@
             }
         });
 
-        // ================================================================
-        //  LOGIN / LOGOUT
-        // ================================================================
         document.getElementById('loginBtn').addEventListener('click', async () => {
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             const errEl = document.getElementById('loginError');
             errEl.style.display = 'none';
-            if (!email || !password) {
-                errEl.textContent = 'Please enter your email and password.';
-                errEl.style.display = 'block';
-                return;
-            }
+            if (!email || !password) { errEl.textContent = 'Please enter your email and password.'; errEl.style.display = 'block'; return; }
             try {
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (err) {
-                errEl.textContent = 'Invalid email or password. Please try again.';
-                errEl.style.display = 'block';
+                errEl.textContent = 'Invalid email or password. Please try again.'; errEl.style.display = 'block';
             }
         });
 
@@ -793,78 +789,54 @@
         });
 
         document.getElementById('logoutBtn').addEventListener('click', async () => {
-            await signOut(auth);
-            showToast('Logged out successfully.');
+            await signOut(auth); showToast('Logged out successfully.');
         });
 
-        // Show a toast while still on the login screen
         function showToastLogin(msg) {
             const errEl = document.getElementById('loginError');
-            errEl.textContent = msg;
-            errEl.style.display = 'block';
+            errEl.textContent = msg; errEl.style.display = 'block';
         }
 
-        // ================================================================
-        //  ZONE GRID
-        // ================================================================
         function initializeZoneGrid() {
             const grid = document.getElementById('zoneGrid');
             grid.innerHTML = '';
-
             zones.forEach((zone, zoneIndex) => {
                 const card = document.createElement('div');
                 card.className = 'zone-card';
-
                 const zoneName = document.createElement('div');
                 zoneName.className = 'zone-name';
                 zoneName.textContent = zone;
                 card.appendChild(zoneName);
-
                 readingTypes.forEach(type => {
                     const typeSection = document.createElement('div');
                     typeSection.className = 'reading-type-section ' + type;
-
                     const typeLabel = document.createElement('div');
                     typeLabel.className = 'reading-type-label ' + type;
                     typeLabel.textContent = type.toUpperCase();
                     typeSection.appendChild(typeLabel);
-
                     const readingInputs = document.createElement('div');
                     readingInputs.className = 'reading-inputs';
-
                     for (let i = 1; i <= 6; i++) {
                         const inputWrapper = document.createElement('div');
                         inputWrapper.className = 'reading-input';
-
                         const label = document.createElement('label');
                         label.textContent = 'Zone ' + i;
                         inputWrapper.appendChild(label);
-
                         const input = document.createElement('input');
-                        input.type = 'number';
-                        input.step = '0.1';
-                        input.min = '0';
-                        input.placeholder = '0.0';
-                        input.inputMode = 'decimal';
-                        input.pattern = '[0-9]*\\.?[0-9]*';
+                        input.type = 'number'; input.step = '0.1'; input.min = '0'; input.placeholder = '0.0';
+                        input.inputMode = 'decimal'; input.pattern = '[0-9]*\\.?[0-9]*';
                         input.id = 'zone-' + zoneIndex + '-' + type + '-reading-' + i;
                         input.addEventListener('input', () => updateZoneAverage(zoneIndex, type));
                         inputWrapper.appendChild(input);
                         readingInputs.appendChild(inputWrapper);
                     }
-
                     typeSection.appendChild(readingInputs);
-
                     const averageDiv = document.createElement('div');
                     averageDiv.className = 'zone-average ' + type;
-                    averageDiv.innerHTML =
-                        '<div class="zone-average-label ' + type + '">' + type.toUpperCase() + ' Average</div>' +
-                        '<div class="zone-average-value ' + type + '" id="avg-' + zoneIndex + '-' + type + '">--</div>';
+                    averageDiv.innerHTML = '<div class="zone-average-label ' + type + '">' + type.toUpperCase() + ' Average</div><div class="zone-average-value ' + type + '" id="avg-' + zoneIndex + '-' + type + '">--</div>';
                     typeSection.appendChild(averageDiv);
-
                     card.appendChild(typeSection);
                 });
-
                 grid.appendChild(card);
             });
         }
@@ -876,17 +848,11 @@
                 if (!isNaN(val) && val > 0) readings.push(val);
             }
             const avgEl = document.getElementById('avg-' + zoneIndex + '-' + type);
-            avgEl.textContent = readings.length > 0
-                ? (readings.reduce((s, v) => s + v, 0) / readings.length).toFixed(1)
-                : '--';
+            avgEl.textContent = readings.length > 0 ? (readings.reduce((s, v) => s + v, 0) / readings.length).toFixed(1) : '--';
         }
 
-        // ================================================================
-        //  SUBMIT
-        // ================================================================
         async function submitReadings() {
             if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
-
             const enteredBy = document.getElementById('enteredBy').value.trim();
             const tempHighVal = document.getElementById('tempHigh').value.trim();
             const tempLowVal = document.getElementById('tempLow').value.trim();
@@ -894,27 +860,16 @@
             const roofStatus = document.getElementById('roofStatus').value || null;
             const tempHigh = tempHighVal === '' ? null : parseFloat(tempHighVal);
             const tempLow = tempLowVal === '' ? null : parseFloat(tempLowVal);
-
             const reading = {
-                timestamp: Timestamp.now(),
-                date: new Date().toLocaleString(),
+                timestamp: Timestamp.now(), date: new Date().toLocaleString(),
                 enteredBy: enteredBy || null,
                 tempHigh: isNaN(tempHigh) ? null : tempHigh,
                 tempLow: isNaN(tempLow) ? null : tempLow,
-                weatherCondition: weatherCondition,
-                roofStatus: roofStatus,
-                zones: []
+                weatherCondition, roofStatus, zones: []
             };
-
             let hasData = false;
-
             zones.forEach((zone, zoneIndex) => {
-                const zoneEntry = {
-                    name: zone,
-                    tdr: { readings: [], average: null },
-                    shear: { readings: [], average: null }
-                };
-
+                const zoneEntry = { name: zone, tdr: { readings: [], average: null }, shear: { readings: [], average: null } };
                 readingTypes.forEach(type => {
                     const vals = [];
                     for (let i = 1; i <= 6; i++) {
@@ -922,24 +877,16 @@
                         if (!isNaN(val) && val > 0) { vals.push(val); hasData = true; }
                     }
                     zoneEntry[type].readings = vals;
-                    if (vals.length > 0) {
-                        zoneEntry[type].average = vals.reduce((s, v) => s + v, 0) / vals.length;
-                    }
+                    if (vals.length > 0) zoneEntry[type].average = vals.reduce((s, v) => s + v, 0) / vals.length;
                 });
-
                 reading.zones.push(zoneEntry);
             });
-
-            if (!hasData) {
-                showToast('Please enter at least one reading before submitting.');
-                return;
-            }
-
+            if (!hasData) { showToast('Please enter at least one reading before submitting.'); return; }
             try {
                 await addDoc(readingsCol(), reading);
                 showToast('Readings saved!');
                 clearForm(false);
-                try { await deleteDoc(draftDocRef()); } catch (e) { /* ignore */ }
+                try { await deleteDoc(draftDocRef()); } catch (e) {}
                 showDraftNotice(false);
             } catch (error) {
                 console.error('Error saving to Firebase:', error);
@@ -947,9 +894,6 @@
             }
         }
 
-        // ================================================================
-        //  DRAFT — SAVE / LOAD / DISCARD
-        // ================================================================
         async function saveDraft() {
             if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
             const draftData = {
@@ -958,21 +902,17 @@
                 tempLow: document.getElementById('tempLow').value.trim(),
                 weatherCondition: document.getElementById('weatherCondition').value,
                 roofStatus: document.getElementById('roofStatus').value,
-                savedAt: Timestamp.now(),
-                zones: {}
+                savedAt: Timestamp.now(), zones: {}
             };
-
             zones.forEach((zone, zoneIndex) => {
                 draftData.zones[String(zoneIndex)] = {};
                 readingTypes.forEach(type => {
                     draftData.zones[String(zoneIndex)][type] = {};
                     for (let i = 1; i <= 6; i++) {
-                        const input = document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i);
-                        draftData.zones[String(zoneIndex)][type][String(i)] = input.value || '';
+                        draftData.zones[String(zoneIndex)][type][String(i)] = document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i).value || '';
                     }
                 });
             });
-
             try {
                 await setDoc(draftDocRef(), draftData);
                 showDraftNotice(true);
@@ -994,17 +934,14 @@
                 document.getElementById('tempLow').value = d.tempLow || '';
                 document.getElementById('weatherCondition').value = d.weatherCondition || '';
                 document.getElementById('roofStatus').value = d.roofStatus || '';
-
                 zones.forEach((zone, zoneIndex) => {
                     readingTypes.forEach(type => {
                         for (let i = 1; i <= 6; i++) {
-                            const input = document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i);
-                            input.value = d.zones?.[String(zoneIndex)]?.[type]?.[String(i)] || '';
+                            document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i).value = d.zones?.[String(zoneIndex)]?.[type]?.[String(i)] || '';
                         }
                         updateZoneAverage(zoneIndex, type);
                     });
                 });
-
                 showToast('Draft restored! Continue where you left off.');
             } catch (error) {
                 console.error('Error loading draft:', error);
@@ -1018,36 +955,26 @@
                 await deleteDoc(draftDocRef());
                 showDraftNotice(false);
                 showToast('Draft discarded.');
-            } catch (error) {
-                console.error('Error discarding draft:', error);
-                showToast('Error discarding draft.');
-            }
+            } catch (error) { showToast('Error discarding draft.'); }
         }
 
         function showDraftNotice(show) {
             const el = document.getElementById('draftNotice');
-            if (show) { el.classList.add('show'); } else { el.classList.remove('show'); }
+            if (show) el.classList.add('show'); else el.classList.remove('show');
         }
 
         async function checkForExistingDraft() {
             if (!currentUser || !currentTeamId) return;
             try {
                 const snap = await getDoc(draftDocRef());
-                if (snap.exists() && snap.data().zones) { showDraftNotice(true); }
-            } catch (e) {
-                console.error('Error checking for draft:', e);
-            }
+                if (snap.exists() && snap.data().zones) showDraftNotice(true);
+            } catch (e) { console.error('Error checking for draft:', e); }
         }
 
-        // ================================================================
-        //  CLEAR FORM
-        // ================================================================
         function clearForm(notify) {
             zones.forEach((zone, zoneIndex) => {
                 readingTypes.forEach(type => {
-                    for (let i = 1; i <= 6; i++) {
-                        document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i).value = '';
-                    }
+                    for (let i = 1; i <= 6; i++) document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i).value = '';
                     updateZoneAverage(zoneIndex, type);
                 });
             });
@@ -1059,13 +986,9 @@
             if (notify !== false) showToast('Form cleared.');
         }
 
-        // ================================================================
-        //  REAL-TIME LISTENER
-        // ================================================================
         function listenForReadings() {
-            if (unsubscribeReadings) { unsubscribeReadings(); }
+            if (unsubscribeReadings) unsubscribeReadings();
             const q = query(readingsCol(), orderBy('timestamp', 'asc'));
-
             unsubscribeReadings = onSnapshot(q, (snapshot) => {
                 readingsHistory = [];
                 snapshot.forEach((docSnap) => {
@@ -1074,29 +997,20 @@
                         id: docSnap.id,
                         date: data.date || data.timestamp?.toDate().toLocaleString() || 'Unknown',
                         enteredBy: data.enteredBy || null,
-                        tempHigh: data.tempHigh ?? null,
-                        tempLow: data.tempLow ?? null,
+                        tempHigh: data.tempHigh ?? null, tempLow: data.tempLow ?? null,
                         weatherCondition: data.weatherCondition || null,
-                        roofStatus: data.roofStatus || null,
-                        zones: data.zones || []
+                        roofStatus: data.roofStatus || null, zones: data.zones || []
                     });
                 });
                 readingsHistory.reverse();
-                updateChart();
-                updateReportTables();
+                updateChart(); updateReportTables();
             }, (error) => {
                 console.error('Firestore listener error:', error);
                 showToast('Error loading data from Firebase.');
             });
         }
 
-        // ================================================================
-        //  REPORT TABLES
-        // ================================================================
-        function parseReadingDate(dateStr) {
-            const d = new Date(dateStr);
-            return isNaN(d.getTime()) ? null : d;
-        }
+        function parseReadingDate(dateStr) { const d = new Date(dateStr); return isNaN(d.getTime()) ? null : d; }
 
         function getFilteredReadings() {
             const now = new Date();
@@ -1110,10 +1024,7 @@
                 startDate.setDate(startDate.getDate() - 7);
                 startDate.setHours(0, 0, 0, 0);
             }
-            return readingsHistory.filter(r => {
-                const d = parseReadingDate(r.date);
-                return d && d >= startDate && d <= endDate;
-            });
+            return readingsHistory.filter(r => { const d = parseReadingDate(r.date); return d && d >= startDate && d <= endDate; });
         }
 
         function applyDateFilter() {
@@ -1121,167 +1032,110 @@
             const e = document.getElementById('filterEnd').value;
             if (!s || !e) { showToast('Please select both a start and end date.'); return; }
             if (s > e) { showToast('Start date must be before end date.'); return; }
-            customFilterStart = s;
-            customFilterEnd = e;
+            customFilterStart = s; customFilterEnd = e;
             document.getElementById('filterInfo').textContent = 'Showing ' + s + ' to ' + e;
             updateReportTables();
         }
 
         function resetDateFilter() {
-            customFilterStart = null;
-            customFilterEnd = null;
+            customFilterStart = null; customFilterEnd = null;
             document.getElementById('filterStart').value = '';
             document.getElementById('filterEnd').value = '';
             document.getElementById('filterInfo').textContent = 'Showing last 7 days';
             updateReportTables();
         }
 
-        function escapeHTML(str) {
-            const d = document.createElement('div');
-            d.textContent = str;
-            return d.innerHTML;
-        }
+        function escapeHTML(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
         function updateReportTables() {
             const tdrBody = document.getElementById('tdrReportBody');
             const shearBody = document.getElementById('shearReportBody');
-            tdrBody.innerHTML = '';
-            shearBody.innerHTML = '';
-
+            tdrBody.innerHTML = ''; shearBody.innerHTML = '';
             const filtered = getFilteredReadings();
             let hasTdr = false, hasShear = false;
-
             filtered.forEach(reading => {
                 const weatherCells =
                     '<td>' + escapeHTML(reading.tempHigh != null ? String(reading.tempHigh) : '\u2014') + '</td>' +
                     '<td>' + escapeHTML(reading.tempLow != null ? String(reading.tempLow) : '\u2014') + '</td>' +
                     '<td>' + escapeHTML(reading.weatherCondition || '\u2014') + '</td>' +
                     '<td>' + escapeHTML(reading.roofStatus || '\u2014') + '</td>';
-
-                let tdrRow = '<tr><td style="text-align:left;">' + escapeHTML(reading.date) + '</td>';
-                tdrRow += '<td style="text-align:left;">' + escapeHTML(reading.enteredBy || '\u2014') + '</td>';
-                tdrRow += weatherCells;
-                let shearRow = '<tr><td style="text-align:left;">' + escapeHTML(reading.date) + '</td>';
-                shearRow += '<td style="text-align:left;">' + escapeHTML(reading.enteredBy || '\u2014') + '</td>';
-                shearRow += weatherCells;
-
+                let tdrRow = '<tr><td style="text-align:left;">' + escapeHTML(reading.date) + '</td><td style="text-align:left;">' + escapeHTML(reading.enteredBy || '\u2014') + '</td>' + weatherCells;
+                let shearRow = '<tr><td style="text-align:left;">' + escapeHTML(reading.date) + '</td><td style="text-align:left;">' + escapeHTML(reading.enteredBy || '\u2014') + '</td>' + weatherCells;
                 let rowHasTdr = false, rowHasShear = false;
-
                 zones.forEach(zoneName => {
                     const zd = reading.zones.find(z => z.name === zoneName);
-                    if (zd && zd.tdr && zd.tdr.average != null) {
-                        tdrRow += '<td class="avg-cell tdr">' + zd.tdr.average.toFixed(1) + '</td>';
-                        rowHasTdr = true;
-                    } else {
-                        tdrRow += '<td>\u2014</td>';
-                    }
-                    if (zd && zd.shear && zd.shear.average != null) {
-                        shearRow += '<td class="avg-cell shear">' + zd.shear.average.toFixed(1) + '</td>';
-                        rowHasShear = true;
-                    } else {
-                        shearRow += '<td>\u2014</td>';
-                    }
+                    if (zd && zd.tdr && zd.tdr.average != null) { tdrRow += '<td class="avg-cell tdr">' + zd.tdr.average.toFixed(1) + '</td>'; rowHasTdr = true; } else tdrRow += '<td>\u2014</td>';
+                    if (zd && zd.shear && zd.shear.average != null) { shearRow += '<td class="avg-cell shear">' + zd.shear.average.toFixed(1) + '</td>'; rowHasShear = true; } else shearRow += '<td>\u2014</td>';
                 });
-
-                tdrRow += '</tr>';
-                shearRow += '</tr>';
+                tdrRow += '</tr>'; shearRow += '</tr>';
                 if (rowHasTdr) { tdrBody.innerHTML += tdrRow; hasTdr = true; }
                 if (rowHasShear) { shearBody.innerHTML += shearRow; hasShear = true; }
             });
-
             document.getElementById('tdrEmpty').style.display = hasTdr ? 'none' : 'block';
             document.getElementById('tdrReportTable').style.display = hasTdr ? 'table' : 'none';
             document.getElementById('shearEmpty').style.display = hasShear ? 'none' : 'block';
             document.getElementById('shearReportTable').style.display = hasShear ? 'table' : 'none';
         }
 
-        // ================================================================
-        //  CHART
-        // ================================================================
         const zoneColors = ['#2D74A6', '#E68A3C', '#4CAF50', '#9C27B0', '#F44336', '#00BCD4'];
 
         function switchChart(type) {
             activeChartType = type;
-            document.querySelectorAll('.chart-tab').forEach(tab => {
-                tab.classList.toggle('active', tab.dataset.chartType === type);
-            });
+            document.querySelectorAll('.chart-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.chartType === type));
             updateChart();
         }
 
         function updateChart() {
             const chartSvg = document.getElementById('chartSvg');
             const chartLegend = document.getElementById('chartLegend');
-
             if (readingsHistory.length === 0) {
                 chartSvg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--color-text-secondary)" font-size="14">No data to display</text>';
-                chartLegend.innerHTML = '';
-                return;
+                chartLegend.innerHTML = ''; return;
             }
-
             const chronological = [...readingsHistory].reverse();
             const zoneData = {};
             zones.forEach(z => { zoneData[z] = []; });
-
             chronological.forEach((reading, index) => {
                 reading.zones.forEach(zone => {
                     let avg = null;
-                    if (zone[activeChartType] && zone[activeChartType].average != null) {
-                        avg = zone[activeChartType].average;
-                    }
-                    if (avg !== null && zoneData[zone.name]) {
-                        zoneData[zone.name].push({ index, value: avg, date: reading.date });
-                    }
+                    if (zone[activeChartType] && zone[activeChartType].average != null) avg = zone[activeChartType].average;
+                    if (avg !== null && zoneData[zone.name]) zoneData[zone.name].push({ index, value: avg, date: reading.date });
                 });
             });
-
             let allValues = [];
             Object.values(zoneData).forEach(data => { allValues = allValues.concat(data.map(d => d.value)); });
-
             if (allValues.length === 0) {
                 chartSvg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--color-text-secondary)" font-size="14">No ' + activeChartType.toUpperCase() + ' data to display</text>';
-                chartLegend.innerHTML = '';
-                return;
+                chartLegend.innerHTML = ''; return;
             }
-
             const padding = { top: 20, right: 20, bottom: 40, left: 50 };
             const svgW = chartSvg.clientWidth || 800;
             const svgH = chartSvg.clientHeight || 350;
             const cW = svgW - padding.left - padding.right;
             const cH = svgH - padding.top - padding.bottom;
-            const minV = Math.min(...allValues);
-            const maxV = Math.max(...allValues);
-            const range = maxV - minV || 1;
-
+            const minV = Math.min(...allValues); const maxV = Math.max(...allValues); const range = maxV - minV || 1;
             chartSvg.innerHTML = '';
-
             for (let i = 0; i <= 5; i++) {
-                const y = padding.top + (cH / 5) * i;
-                const val = maxV - (range / 5) * i;
+                const y = padding.top + (cH / 5) * i; const val = maxV - (range / 5) * i;
                 const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('x1', padding.left); line.setAttribute('y1', y);
-                line.setAttribute('x2', svgW - padding.right); line.setAttribute('y2', y);
+                line.setAttribute('x1', padding.left); line.setAttribute('y1', y); line.setAttribute('x2', svgW - padding.right); line.setAttribute('y2', y);
                 line.setAttribute('stroke', 'var(--color-border)'); line.setAttribute('stroke-width', '1'); line.setAttribute('opacity', '0.3');
                 chartSvg.appendChild(line);
                 const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('x', padding.left - 10); text.setAttribute('y', y + 4);
-                text.setAttribute('text-anchor', 'end'); text.setAttribute('fill', 'var(--color-text-secondary)'); text.setAttribute('font-size', '11');
-                text.textContent = val.toFixed(1);
-                chartSvg.appendChild(text);
+                text.setAttribute('x', padding.left - 10); text.setAttribute('y', y + 4); text.setAttribute('text-anchor', 'end');
+                text.setAttribute('fill', 'var(--color-text-secondary)'); text.setAttribute('font-size', '11');
+                text.textContent = val.toFixed(1); chartSvg.appendChild(text);
             }
-
             chronological.forEach((reading, index) => {
                 const x = padding.left + (cW / (chronological.length - 1 || 1)) * index;
                 const shortDate = new Date(reading.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('x', x); text.setAttribute('y', svgH - padding.bottom + 20);
-                text.setAttribute('text-anchor', 'middle'); text.setAttribute('fill', 'var(--color-text-secondary)'); text.setAttribute('font-size', '11');
-                text.textContent = shortDate;
-                chartSvg.appendChild(text);
+                text.setAttribute('x', x); text.setAttribute('y', svgH - padding.bottom + 20); text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', 'var(--color-text-secondary)'); text.setAttribute('font-size', '11');
+                text.textContent = shortDate; chartSvg.appendChild(text);
             });
-
             Object.keys(zoneData).forEach((zoneName, zi) => {
-                const data = zoneData[zoneName];
-                if (!data.length) return;
+                const data = zoneData[zoneName]; if (!data.length) return;
                 const color = zoneColors[zi % zoneColors.length];
                 let pathD = '';
                 data.forEach((pt, i) => {
@@ -1292,7 +1146,6 @@
                 const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 path.setAttribute('d', pathD); path.setAttribute('class', 'chart-line'); path.setAttribute('stroke', color);
                 chartSvg.appendChild(path);
-
                 data.forEach(pt => {
                     const x = padding.left + (cW / (chronological.length - 1 || 1)) * pt.index;
                     const y = padding.top + cH - ((pt.value - minV) / range) * cH;
@@ -1302,14 +1155,12 @@
                     circle.addEventListener('mouseenter', (e) => {
                         const tip = document.getElementById('chartTooltip');
                         tip.innerHTML = '<strong>' + zoneName + ' (' + activeChartType.toUpperCase() + ')</strong><br>' + pt.date + '<br>Value: ' + pt.value.toFixed(1);
-                        tip.style.left = (e.pageX + 10) + 'px'; tip.style.top = (e.pageY - 40) + 'px';
-                        tip.classList.add('show');
+                        tip.style.left = (e.pageX + 10) + 'px'; tip.style.top = (e.pageY - 40) + 'px'; tip.classList.add('show');
                     });
-                    circle.addEventListener('mouseleave', () => { document.getElementById('chartTooltip').classList.remove('show'); });
+                    circle.addEventListener('mouseleave', () => document.getElementById('chartTooltip').classList.remove('show'));
                     chartSvg.appendChild(circle);
                 });
             });
-
             chartLegend.innerHTML = '';
             zones.forEach((zone, i) => {
                 const item = document.createElement('div'); item.className = 'legend-item';
@@ -1319,9 +1170,6 @@
             });
         }
 
-        // ================================================================
-        //  EXPORT CSV
-        // ================================================================
         function exportData() {
             if (readingsHistory.length === 0) { showToast('No data to export.'); return; }
             try {
@@ -1329,18 +1177,10 @@
                 readingsHistory.forEach(reading => {
                     const base = ['"' + reading.date + '"', '"' + (reading.enteredBy || '') + '"'];
                     const tdrRow = [...base, 'TDR'];
-                    zones.forEach(zn => {
-                        const z = reading.zones.find(zz => zz.name === zn);
-                        if (z && z.tdr && z.tdr.average != null) tdrRow.push(z.tdr.average.toFixed(1));
-                        else tdrRow.push('');
-                    });
+                    zones.forEach(zn => { const z = reading.zones.find(zz => zz.name === zn); if (z && z.tdr && z.tdr.average != null) tdrRow.push(z.tdr.average.toFixed(1)); else tdrRow.push(''); });
                     csv += tdrRow.join(',') + '\n';
                     const shearRow = [...base, 'Shear'];
-                    zones.forEach(zn => {
-                        const z = reading.zones.find(zz => zz.name === zn);
-                        if (z && z.shear && z.shear.average != null) shearRow.push(z.shear.average.toFixed(1));
-                        else shearRow.push('');
-                    });
+                    zones.forEach(zn => { const z = reading.zones.find(zz => zz.name === zn); if (z && z.shear && z.shear.average != null) shearRow.push(z.shear.average.toFixed(1)); else shearRow.push(''); });
                     csv += shearRow.join(',') + '\n';
                 });
                 const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -1350,16 +1190,12 @@
                 document.body.appendChild(link);
                 setTimeout(() => { link.click(); setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 100); }, 10);
                 showToast('Exporting ' + readingsHistory.length + ' reading(s)...');
-            } catch (error) { console.error('Export error:', error); showToast('Error exporting.'); }
+            } catch (error) { showToast('Error exporting.'); }
         }
 
-        // ================================================================
-        //  IMPORT
-        // ================================================================
         function importData(event) {
             if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
-            const file = event.target.files[0];
-            if (!file) return;
+            const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = async function(e) {
                 try {
@@ -1367,47 +1203,26 @@
                     if (!Array.isArray(imported)) { showToast('Invalid file format.'); return; }
                     let count = 0;
                     for (const r of imported) {
-                        await addDoc(readingsCol(), {
-                            timestamp: Timestamp.now(), date: r.date || new Date().toLocaleString(),
-                            enteredBy: r.enteredBy || null, zones: r.zones || []
-                        });
+                        await addDoc(readingsCol(), { timestamp: Timestamp.now(), date: r.date || new Date().toLocaleString(), enteredBy: r.enteredBy || null, zones: r.zones || [] });
                         count++;
                     }
                     showToast('Imported ' + count + ' reading(s)!');
-                } catch (err) {
-                    showToast('Error reading file.');
-                }
+                } catch (err) { showToast('Error reading file.'); }
             };
-            reader.readAsText(file);
-            event.target.value = '';
+            reader.readAsText(file); event.target.value = '';
         }
 
-        // ================================================================
-        //  TOAST
-        // ================================================================
         function showToast(message) {
             const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+            toast.textContent = message; toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // ================================================================
-        //  WIRE UP BUTTONS
-        // ================================================================
         document.getElementById('clearBtn').addEventListener('click', () => clearForm());
-        document.getElementById('submitBtn').addEventListener('click', () => {
-            submitReadings().catch(err => { console.error(err); showToast('Error submitting.'); });
-        });
-        document.getElementById('saveDraftBtn').addEventListener('click', () => {
-            saveDraft().catch(err => { console.error(err); showToast('Error saving draft.'); });
-        });
-        document.getElementById('loadDraftBtn').addEventListener('click', () => {
-            loadDraft().catch(err => { console.error(err); showToast('Error loading draft.'); });
-        });
-        document.getElementById('discardDraftBtn').addEventListener('click', () => {
-            discardDraft().catch(err => { console.error(err); showToast('Error discarding draft.'); });
-        });
+        document.getElementById('submitBtn').addEventListener('click', () => submitReadings().catch(err => { console.error(err); showToast('Error submitting.'); }));
+        document.getElementById('saveDraftBtn').addEventListener('click', () => saveDraft().catch(err => { console.error(err); showToast('Error saving draft.'); }));
+        document.getElementById('loadDraftBtn').addEventListener('click', () => loadDraft().catch(err => { console.error(err); showToast('Error loading draft.'); }));
+        document.getElementById('discardDraftBtn').addEventListener('click', () => discardDraft().catch(err => { console.error(err); showToast('Error discarding draft.'); }));
         document.getElementById('exportBtn').addEventListener('click', () => exportData());
         document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
         document.getElementById('importFile').addEventListener('change', (e) => importData(e));
