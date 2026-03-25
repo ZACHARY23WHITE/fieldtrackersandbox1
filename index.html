@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="GroundsCrew">
-    <meta name="description" content="Track TDR and Shear moisture readings across baseball field zones">
+    <meta name="description" content="Track TDR, Shear, and Clegg readings across baseball field zones">
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -66,6 +66,10 @@
             --shear-accent: #a83232;
             --shear-text: #8b2020;
             --shear-border: rgba(180, 50, 50, 0.25);
+            --clegg-bg: rgba(100, 60, 180, 0.08);
+            --clegg-accent: #6433b0;
+            --clegg-text: #52289c;
+            --clegg-border: rgba(100, 60, 180, 0.25);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -91,6 +95,10 @@
                 --shear-accent: #ff5459;
                 --shear-text: #ff7a7e;
                 --shear-border: rgba(255, 84, 89, 0.3);
+                --clegg-bg: rgba(160, 120, 255, 0.12);
+                --clegg-accent: #b48aff;
+                --clegg-text: #c9a8ff;
+                --clegg-border: rgba(160, 120, 255, 0.3);
             }
         }
 
@@ -152,10 +160,7 @@
             text-align: center;
         }
 
-        .login-field {
-            width: 100%;
-            margin-bottom: 12px;
-        }
+        .login-field { width: 100%; margin-bottom: 12px; }
 
         .login-field label {
             display: block;
@@ -167,7 +172,6 @@
             letter-spacing: 0.05em;
         }
 
-        /* Wrapper for input + clear button */
         .login-input-wrapper {
             position: relative;
             display: flex;
@@ -176,7 +180,7 @@
 
         .login-field input {
             width: 100%;
-            padding: 12px 38px 12px 14px; /* right padding leaves room for ✕ */
+            padding: 12px 38px 12px 14px;
             border: 1px solid var(--color-border);
             border-radius: 8px;
             background: var(--color-background);
@@ -191,7 +195,6 @@
             border-color: var(--color-primary);
         }
 
-        /* Clear (✕) button inside input */
         .login-clear-btn {
             position: absolute;
             right: 10px;
@@ -199,7 +202,7 @@
             border: none;
             cursor: pointer;
             padding: 4px;
-            display: none;          /* hidden until field has content */
+            display: none;
             align-items: center;
             justify-content: center;
             color: var(--color-text-secondary);
@@ -211,13 +214,8 @@
             transition: background 0.15s, color 0.15s;
             flex-shrink: 0;
         }
-        .login-clear-btn:hover {
-            background: var(--color-secondary);
-            color: var(--color-text);
-        }
-        .login-clear-btn.visible {
-            display: flex;
-        }
+        .login-clear-btn:hover { background: var(--color-secondary); color: var(--color-text); }
+        .login-clear-btn.visible { display: flex; }
 
         .login-btn {
             width: 100%;
@@ -233,7 +231,6 @@
             transition: background 0.2s;
             font-family: var(--font-family-base);
         }
-
         .login-btn:hover { background: var(--color-primary-hover); }
         .login-btn:active { background: var(--color-primary-active); }
 
@@ -248,10 +245,7 @@
         }
 
         /* ===================== MAIN APP ===================== */
-        #mainApp {
-            display: none;
-            padding: var(--space-20);
-        }
+        #mainApp { display: none; padding: var(--space-20); }
 
         .container { max-width: 1200px; margin: 0 auto; }
 
@@ -265,7 +259,7 @@
         }
 
         .app-topbar-left h1 { font-size: 28px; margin-bottom: var(--space-8); color: var(--color-text); }
-        .subtitle { color: var(--color-text-secondary); margin-bottom: var(--space-24); font-size: 14px; }
+        .subtitle { color: var(--color-text-secondary); margin-bottom: var(--space-16); font-size: 14px; }
 
         .user-badge {
             display: flex;
@@ -278,7 +272,6 @@
             font-size: 13px;
             color: var(--color-text-secondary);
         }
-
         .user-badge strong { color: var(--color-text); }
 
         .logout-btn {
@@ -293,8 +286,48 @@
             font-family: var(--font-family-base);
             transition: background 0.15s;
         }
-
         .logout-btn:hover { background: var(--color-secondary-hover); }
+
+        /* ===================== TOP-LEVEL TAB BAR ===================== */
+        .main-tab-bar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: var(--space-20);
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 6px;
+        }
+
+        .main-tab {
+            flex: 1;
+            padding: 10px 20px;
+            border-radius: var(--radius-base);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--color-text-secondary);
+            font-family: var(--font-family-base);
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .main-tab.active {
+            background: var(--color-primary);
+            color: var(--color-btn-primary-text);
+            box-shadow: 0 2px 8px rgba(33,128,141,0.25);
+        }
+
+        .main-tab:not(.active):hover {
+            background: var(--color-secondary);
+            color: var(--color-text);
+        }
+
+        /* Tab panels */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
 
         .section {
             background-color: var(--color-surface);
@@ -325,6 +358,45 @@
         }
         .entered-by-wrapper input:focus { outline: 2px solid var(--color-primary); border-color: var(--color-primary); }
 
+        .meta-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-bottom: var(--space-16);
+        }
+
+        .meta-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 130px;
+        }
+
+        .meta-field label {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+
+        .meta-field input,
+        .meta-field select {
+            padding: 8px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: var(--color-background);
+            color: var(--color-text);
+            font-size: 14px;
+            width: 100%;
+            font-family: var(--font-family-base);
+        }
+
+        .meta-field input:focus,
+        .meta-field select:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
         .zone-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -351,6 +423,7 @@
         }
         .reading-type-section.tdr { background: var(--tdr-bg); border-color: var(--tdr-border); }
         .reading-type-section.shear { background: var(--shear-bg); border-color: var(--shear-border); }
+        .reading-type-section.clegg { background: var(--clegg-bg); border-color: var(--clegg-border); }
 
         .reading-type-label {
             font-size: 13px; font-weight: 700; text-align: center;
@@ -359,6 +432,7 @@
         }
         .reading-type-label.tdr { color: var(--tdr-text); }
         .reading-type-label.shear { color: var(--shear-text); }
+        .reading-type-label.clegg { color: var(--clegg-text); }
 
         .reading-inputs {
             display: grid; grid-template-columns: repeat(3, 1fr);
@@ -380,14 +454,17 @@
         }
         .zone-average.tdr { background-color: var(--tdr-bg); }
         .zone-average.shear { background-color: var(--shear-bg); }
+        .zone-average.clegg { background-color: var(--clegg-bg); }
 
         .zone-average-label { font-size: 11px; font-weight: 500; margin-bottom: 2px; }
         .zone-average-label.tdr { color: var(--tdr-text); }
         .zone-average-label.shear { color: var(--shear-text); }
+        .zone-average-label.clegg { color: var(--clegg-text); }
 
         .zone-average-value { font-size: 22px; font-weight: 700; }
         .zone-average-value.tdr { color: var(--tdr-accent); }
         .zone-average-value.shear { color: var(--shear-accent); }
+        .zone-average-value.clegg { color: var(--clegg-accent); }
 
         .button {
             padding: 12px 24px; border: none; border-radius: var(--radius-base);
@@ -452,6 +529,7 @@
         }
         .report-header.tdr { background: var(--tdr-bg); color: var(--tdr-text); border-bottom: 1px solid var(--tdr-border); }
         .report-header.shear { background: var(--shear-bg); color: var(--shear-text); border-bottom: 1px solid var(--shear-border); }
+        .report-header.clegg { background: var(--clegg-bg); color: var(--clegg-text); border-bottom: 1px solid var(--clegg-border); }
         .report-body { overflow-x: auto; }
         .report-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .report-table th, .report-table td {
@@ -465,6 +543,7 @@
         .report-table tbody tr:hover { background: var(--color-secondary); }
         .report-table .avg-cell.tdr { color: var(--tdr-accent); font-weight: 700; }
         .report-table .avg-cell.shear { color: var(--shear-accent); font-weight: 700; }
+        .report-table .avg-cell.clegg { color: var(--clegg-accent); font-weight: 700; }
         .report-empty { padding: var(--space-24); text-align: center; color: var(--color-text-secondary); font-size: 13px; }
 
         .chart-container {
@@ -519,6 +598,7 @@
             .reading-inputs { grid-template-columns: repeat(2, 1fr); }
             .chart { height: 350px; }
             .app-topbar { flex-direction: column; }
+            .main-tab { font-size: 13px; padding: 8px 12px; }
         }
     </style>
 </head>
@@ -559,8 +639,8 @@
 
             <div class="app-topbar">
                 <div class="app-topbar-left">
-                    <h1>&#9918; Baseball Field Moisture Tracker</h1>
-                    <p class="subtitle">Track TDR and Shear readings across field zones</p>
+                    <h1>&#9918; Baseball Field Tracker</h1>
+                    <p class="subtitle">Track TDR, Shear, and Clegg readings across field zones</p>
                 </div>
                 <div class="user-badge">
                     <span>Logged in as <strong id="userEmailDisplay"></strong></span>
@@ -568,140 +648,266 @@
                 </div>
             </div>
 
-            <div class="section">
-                <div class="section-header">
-                    <h2 class="section-title">Moisture Readings</h2>
-                </div>
-
-                <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end; margin-bottom:var(--space-16);">
-                    <div class="entered-by-wrapper" style="margin-bottom:0;">
-                        <label for="enteredBy">Entered by</label>
-                        <input type="text" id="enteredBy" placeholder="First name">
-                    </div>
-                    <div style="display:flex; flex-direction:column; gap:4px; min-width:130px;">
-                        <label for="tempHigh" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Temp High (&deg;F)</label>
-                        <input type="number" id="tempHigh" placeholder="75" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
-                    </div>
-                    <div style="display:flex; flex-direction:column; gap:4px; min-width:130px;">
-                        <label for="tempLow" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Temp Low (&deg;F)</label>
-                        <input type="number" id="tempLow" placeholder="55" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
-                    </div>
-                    <div style="display:flex; flex-direction:column; gap:4px; min-width:140px;">
-                        <label for="weatherCondition" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Weather Condition</label>
-                        <select id="weatherCondition" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
-                            <option value="">Select...</option>
-                            <option value="sunny">Sunny</option>
-                            <option value="cloudy">Cloudy</option>
-                            <option value="rainy">Rainy</option>
-                        </select>
-                    </div>
-                    <div style="display:flex; flex-direction:column; gap:4px; min-width:130px;">
-                        <label for="roofStatus" style="font-size:13px; color:var(--color-text-secondary); font-weight:500;">Roof Status</label>
-                        <select id="roofStatus" style="padding:8px 12px; border:1px solid var(--color-border); border-radius:6px; background:var(--color-background); color:var(--color-text); font-size:14px; width:100%;">
-                            <option value="">Select...</option>
-                            <option value="Open">Open</option>
-                            <option value="Closed">Closed</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="zone-grid" id="zoneGrid"></div>
-
-                <div class="button-group">
-                    <button class="button button-secondary" id="clearBtn">Clear All</button>
-                    <button class="button button-secondary" id="saveDraftBtn">&#128190; Save Draft</button>
-                    <button class="button button-secondary" id="exportBtn">Export CSV</button>
-                    <button class="button button-secondary" id="importBtn">Import Data</button>
-                    <button class="button button-primary" id="submitBtn">Submit Readings</button>
-                </div>
-                <input type="file" id="importFile" accept=".json,.csv" style="display: none;">
-
-                <div class="draft-notice" id="draftNotice">
-                    &#128221; <strong>You have a saved draft.</strong>
-                    <button class="draft-notice-btn resume" id="loadDraftBtn">Resume Draft</button>
-                    <button class="draft-notice-btn discard" id="discardDraftBtn">Discard</button>
-                </div>
+            <!-- ===== TOP-LEVEL TAB BAR ===== -->
+            <div class="main-tab-bar">
+                <button class="main-tab active" id="tabMoisture">&#128167; Moisture Readings</button>
+                <button class="main-tab" id="tabClegg">&#128296; Clegg</button>
             </div>
 
-            <!-- Date Range Filter -->
-            <div class="date-filter">
-                <h3>&#128197; Report Date Range</h3>
-                <div class="date-filter-row">
-                    <div class="date-filter-field">
-                        <label for="filterStart">Start Date</label>
-                        <input type="date" id="filterStart">
-                    </div>
-                    <div class="date-filter-field">
-                        <label for="filterEnd">End Date</label>
-                        <input type="date" id="filterEnd">
-                    </div>
-                    <button class="filter-btn filter-btn-primary" id="applyFilterBtn">Apply Filter</button>
-                    <button class="filter-btn filter-btn-secondary" id="resetFilterBtn">Reset (Last 7 Days)</button>
-                </div>
-                <div class="filter-info" id="filterInfo">Showing last 7 days</div>
-            </div>
+            <!-- ===================================================== -->
+            <!-- MOISTURE TAB PANEL                                     -->
+            <!-- ===================================================== -->
+            <div class="tab-panel active" id="panelMoisture">
 
-            <!-- TDR Report -->
-            <div class="report-section">
-                <div class="report-header tdr">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
-                    TDR Report
-                </div>
-                <div class="report-body">
-                    <div class="report-empty" id="tdrEmpty">No TDR readings submitted yet.</div>
-                    <table class="report-table" id="tdrReportTable" style="display:none;">
-                        <thead>
-                            <tr>
-                                <th style="text-align:left;">Date</th>
-                                <th style="text-align:left;">By</th>
-                                <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
-                                <th>Left Field</th><th>Center Field</th><th>Right Field</th>
-                                <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tdrReportBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Shear Report -->
-            <div class="report-section">
-                <div class="report-header shear">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                    Shear Report
-                </div>
-                <div class="report-body">
-                    <div class="report-empty" id="shearEmpty">No Shear readings submitted yet.</div>
-                    <table class="report-table" id="shearReportTable" style="display:none;">
-                        <thead>
-                            <tr>
-                                <th style="text-align:left;">Date</th>
-                                <th style="text-align:left;">By</th>
-                                <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
-                                <th>Left Field</th><th>Center Field</th><th>Right Field</th>
-                                <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
-                            </tr>
-                        </thead>
-                        <tbody id="shearReportBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Charts -->
-            <div class="chart-container">
-                <h2 class="chart-title">Trends Over Time</h2>
-                <div class="chart-tab-bar">
-                    <button class="chart-tab active" data-chart-type="tdr" id="chartTabTdr">TDR</button>
-                    <button class="chart-tab" data-chart-type="shear" id="chartTabShear">Shear</button>
-                </div>
-                <div class="chart">
-                    <div class="chart-canvas" id="chartCanvas">
-                        <svg class="chart-svg" id="chartSvg"></svg>
-                        <div class="chart-tooltip" id="chartTooltip"></div>
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Moisture Readings</h2>
                     </div>
-                    <div class="chart-legend" id="chartLegend"></div>
+
+                    <div class="meta-row">
+                        <div class="meta-field" style="min-width:200px;">
+                            <label for="enteredBy">Entered by</label>
+                            <input type="text" id="enteredBy" placeholder="First name">
+                        </div>
+                        <div class="meta-field">
+                            <label for="tempHigh">Temp High (&deg;F)</label>
+                            <input type="number" id="tempHigh" placeholder="75" inputmode="decimal" pattern="[0-9]*\.?[0-9]*">
+                        </div>
+                        <div class="meta-field">
+                            <label for="tempLow">Temp Low (&deg;F)</label>
+                            <input type="number" id="tempLow" placeholder="55" inputmode="decimal" pattern="[0-9]*\.?[0-9]*">
+                        </div>
+                        <div class="meta-field" style="min-width:150px;">
+                            <label for="weatherCondition">Weather Condition</label>
+                            <select id="weatherCondition">
+                                <option value="">Select...</option>
+                                <option value="sunny">Sunny</option>
+                                <option value="cloudy">Cloudy</option>
+                                <option value="rainy">Rainy</option>
+                            </select>
+                        </div>
+                        <div class="meta-field">
+                            <label for="roofStatus">Roof Status</label>
+                            <select id="roofStatus">
+                                <option value="">Select...</option>
+                                <option value="Open">Open</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="zone-grid" id="zoneGrid"></div>
+
+                    <div class="button-group">
+                        <button class="button button-secondary" id="clearBtn">Clear All</button>
+                        <button class="button button-secondary" id="saveDraftBtn">&#128190; Save Draft</button>
+                        <button class="button button-secondary" id="exportBtn">Export CSV</button>
+                        <button class="button button-secondary" id="importBtn">Import Data</button>
+                        <button class="button button-primary" id="submitBtn">Submit Readings</button>
+                    </div>
+                    <input type="file" id="importFile" accept=".json,.csv" style="display: none;">
+
+                    <div class="draft-notice" id="draftNotice">
+                        &#128221; <strong>You have a saved draft.</strong>
+                        <button class="draft-notice-btn resume" id="loadDraftBtn">Resume Draft</button>
+                        <button class="draft-notice-btn discard" id="discardDraftBtn">Discard</button>
+                    </div>
                 </div>
-            </div>
+
+                <!-- Moisture Date Filter -->
+                <div class="date-filter">
+                    <h3>&#128197; Report Date Range</h3>
+                    <div class="date-filter-row">
+                        <div class="date-filter-field">
+                            <label for="filterStart">Start Date</label>
+                            <input type="date" id="filterStart">
+                        </div>
+                        <div class="date-filter-field">
+                            <label for="filterEnd">End Date</label>
+                            <input type="date" id="filterEnd">
+                        </div>
+                        <button class="filter-btn filter-btn-primary" id="applyFilterBtn">Apply Filter</button>
+                        <button class="filter-btn filter-btn-secondary" id="resetFilterBtn">Reset (Last 7 Days)</button>
+                    </div>
+                    <div class="filter-info" id="filterInfo">Showing last 7 days</div>
+                </div>
+
+                <!-- TDR Report -->
+                <div class="report-section">
+                    <div class="report-header tdr">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                        TDR Report
+                    </div>
+                    <div class="report-body">
+                        <div class="report-empty" id="tdrEmpty">No TDR readings submitted yet.</div>
+                        <table class="report-table" id="tdrReportTable" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">Date</th>
+                                    <th style="text-align:left;">By</th>
+                                    <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
+                                    <th>Left Field</th><th>Center Field</th><th>Right Field</th>
+                                    <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tdrReportBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Shear Report -->
+                <div class="report-section">
+                    <div class="report-header shear">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        Shear Report
+                    </div>
+                    <div class="report-body">
+                        <div class="report-empty" id="shearEmpty">No Shear readings submitted yet.</div>
+                        <table class="report-table" id="shearReportTable" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">Date</th>
+                                    <th style="text-align:left;">By</th>
+                                    <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
+                                    <th>Left Field</th><th>Center Field</th><th>Right Field</th>
+                                    <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shearReportBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Moisture Chart -->
+                <div class="chart-container">
+                    <h2 class="chart-title">Moisture Trends Over Time</h2>
+                    <div class="chart-tab-bar">
+                        <button class="chart-tab active" data-chart-type="tdr" id="chartTabTdr">TDR</button>
+                        <button class="chart-tab" data-chart-type="shear" id="chartTabShear">Shear</button>
+                    </div>
+                    <div class="chart">
+                        <div class="chart-canvas" id="chartCanvas">
+                            <svg class="chart-svg" id="chartSvg"></svg>
+                            <div class="chart-tooltip" id="chartTooltip"></div>
+                        </div>
+                        <div class="chart-legend" id="chartLegend"></div>
+                    </div>
+                </div>
+
+            </div><!-- /panelMoisture -->
+
+            <!-- ===================================================== -->
+            <!-- CLEGG TAB PANEL                                        -->
+            <!-- ===================================================== -->
+            <div class="tab-panel" id="panelClegg">
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Clegg Readings</h2>
+                    </div>
+
+                    <div class="meta-row">
+                        <div class="meta-field" style="min-width:200px;">
+                            <label for="cleggEnteredBy">Entered by</label>
+                            <input type="text" id="cleggEnteredBy" placeholder="First name">
+                        </div>
+                        <div class="meta-field">
+                            <label for="cleggTempHigh">Temp High (&deg;F)</label>
+                            <input type="number" id="cleggTempHigh" placeholder="75" inputmode="decimal" pattern="[0-9]*\.?[0-9]*">
+                        </div>
+                        <div class="meta-field">
+                            <label for="cleggTempLow">Temp Low (&deg;F)</label>
+                            <input type="number" id="cleggTempLow" placeholder="55" inputmode="decimal" pattern="[0-9]*\.?[0-9]*">
+                        </div>
+                        <div class="meta-field" style="min-width:150px;">
+                            <label for="cleggWeather">Weather Condition</label>
+                            <select id="cleggWeather">
+                                <option value="">Select...</option>
+                                <option value="sunny">Sunny</option>
+                                <option value="cloudy">Cloudy</option>
+                                <option value="rainy">Rainy</option>
+                            </select>
+                        </div>
+                        <div class="meta-field">
+                            <label for="cleggRoofStatus">Roof Status</label>
+                            <select id="cleggRoofStatus">
+                                <option value="">Select...</option>
+                                <option value="Open">Open</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="zone-grid" id="cleggZoneGrid"></div>
+
+                    <div class="button-group">
+                        <button class="button button-secondary" id="cleggClearBtn">Clear All</button>
+                        <button class="button button-secondary" id="cleggSaveDraftBtn">&#128190; Save Draft</button>
+                        <button class="button button-secondary" id="cleggExportBtn">Export CSV</button>
+                        <button class="button button-primary" id="cleggSubmitBtn">Submit Clegg Readings</button>
+                    </div>
+
+                    <div class="draft-notice" id="cleggDraftNotice">
+                        &#128221; <strong>You have a saved Clegg draft.</strong>
+                        <button class="draft-notice-btn resume" id="cleggLoadDraftBtn">Resume Draft</button>
+                        <button class="draft-notice-btn discard" id="cleggDiscardDraftBtn">Discard</button>
+                    </div>
+                </div>
+
+                <!-- Clegg Date Filter -->
+                <div class="date-filter">
+                    <h3>&#128197; Clegg Report Date Range</h3>
+                    <div class="date-filter-row">
+                        <div class="date-filter-field">
+                            <label for="cleggFilterStart">Start Date</label>
+                            <input type="date" id="cleggFilterStart">
+                        </div>
+                        <div class="date-filter-field">
+                            <label for="cleggFilterEnd">End Date</label>
+                            <input type="date" id="cleggFilterEnd">
+                        </div>
+                        <button class="filter-btn filter-btn-primary" id="cleggApplyFilterBtn">Apply Filter</button>
+                        <button class="filter-btn filter-btn-secondary" id="cleggResetFilterBtn">Reset (Last 7 Days)</button>
+                    </div>
+                    <div class="filter-info" id="cleggFilterInfo">Showing last 7 days</div>
+                </div>
+
+                <!-- Clegg Report -->
+                <div class="report-section">
+                    <div class="report-header clegg">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                        Clegg Report
+                    </div>
+                    <div class="report-body">
+                        <div class="report-empty" id="cleggEmpty">No Clegg readings submitted yet.</div>
+                        <table class="report-table" id="cleggReportTable" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">Date</th>
+                                    <th style="text-align:left;">By</th>
+                                    <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
+                                    <th>Left Field</th><th>Center Field</th><th>Right Field</th>
+                                    <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cleggReportBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Clegg Chart -->
+                <div class="chart-container">
+                    <h2 class="chart-title">Clegg Trends Over Time</h2>
+                    <div class="chart">
+                        <div class="chart-canvas" id="cleggChartCanvas">
+                            <svg class="chart-svg" id="cleggChartSvg"></svg>
+                            <div class="chart-tooltip" id="cleggChartTooltip"></div>
+                        </div>
+                        <div class="chart-legend" id="cleggChartLegend"></div>
+                    </div>
+                </div>
+
+            </div><!-- /panelClegg -->
 
         </div>
     </div>
@@ -730,7 +936,6 @@
             Timestamp
         } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-        // Register service worker for PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/fieldtrackersandbox1/sw.js')
@@ -759,88 +964,63 @@
         function setupClearButton(inputId, btnId) {
             const input = document.getElementById(inputId);
             const btn = document.getElementById(btnId);
-
-            // Show/hide ✕ based on whether the field has content
-            input.addEventListener('input', () => {
-                btn.classList.toggle('visible', input.value.length > 0);
-            });
-
-            // Tapping ✕ clears the field and hides itself
-            btn.addEventListener('mousedown', (e) => {
-                e.preventDefault(); // prevent input from losing focus weirdly
-                input.value = '';
-                btn.classList.remove('visible');
-                input.focus();
-            });
-
-            // Also handle touch (mobile)
-            btn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                input.value = '';
-                btn.classList.remove('visible');
-                input.focus();
-            });
+            input.addEventListener('input', () => btn.classList.toggle('visible', input.value.length > 0));
+            btn.addEventListener('mousedown', (e) => { e.preventDefault(); input.value = ''; btn.classList.remove('visible'); input.focus(); });
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); input.value = ''; btn.classList.remove('visible'); input.focus(); });
         }
-
         setupClearButton('loginEmail', 'clearEmailBtn');
         setupClearButton('loginPassword', 'clearPasswordBtn');
 
         // ================================================================
         //  CONFIG
         // ================================================================
-        const zones = [
-            'Left Field', 'Center Field', 'Right Field',
-            '1st Base Line', '3rd Base Line', 'Infield'
-        ];
-        const readingTypes = ['tdr', 'shear'];
-        let readingsHistory = [];
+        const zones = ['Left Field', 'Center Field', 'Right Field', '1st Base Line', '3rd Base Line', 'Infield'];
+        const moistureTypes = ['tdr', 'shear'];
+        const cleggTypes = ['clegg'];
+
+        let moistureHistory = [];
+        let cleggHistory = [];
         let activeChartType = 'tdr';
-        let customFilterStart = null;
-        let customFilterEnd = null;
-        let currentUser = null;
-        let currentTeamId = null;
-        let currentUserName = null;
-        let unsubscribeReadings = null;
-        const DRAFT_DOC_ID = 'current_draft';
+        let moistureFilterStart = null, moistureFilterEnd = null;
+        let cleggFilterStart = null, cleggFilterEnd = null;
+        let currentUser = null, currentTeamId = null, currentUserName = null;
+        let unsubMoisture = null, unsubClegg = null;
 
-        function readingsCol() {
-            return collection(db, 'teams', currentTeamId, 'moistureReadings');
-        }
-        function draftDocRef() {
-            return doc(db, 'teams', currentTeamId, 'drafts', DRAFT_DOC_ID);
-        }
+        const MOISTURE_DRAFT_ID = 'current_draft';
+        const CLEGG_DRAFT_ID = 'clegg_draft';
 
+        function moistureCol() { return collection(db, 'teams', currentTeamId, 'moistureReadings'); }
+        function cleggCol() { return collection(db, 'teams', currentTeamId, 'cleggReadings'); }
+        function moistureDraftRef() { return doc(db, 'teams', currentTeamId, 'drafts', MOISTURE_DRAFT_ID); }
+        function cleggDraftRef() { return doc(db, 'teams', currentTeamId, 'drafts', CLEGG_DRAFT_ID); }
+
+        // ================================================================
+        //  AUTH
+        // ================================================================
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                let teamId = null;
-                let displayName = user.email;
+                let teamId = null, displayName = user.email;
                 try {
-                    const userSnap = await getDoc(doc(db, 'users', user.uid));
-                    if (userSnap.exists()) {
-                        teamId = userSnap.data().teamId || null;
-                        displayName = userSnap.data().name || user.email;
-                    }
-                } catch (e) {
-                    console.error('Error reading user profile:', e);
-                }
-                if (!teamId) {
-                    showToastLogin('No team assigned to this account. Contact your admin.');
-                    await signOut(auth);
-                    return;
-                }
-                currentTeamId = teamId;
-                currentUserName = displayName;
+                    const snap = await getDoc(doc(db, 'users', user.uid));
+                    if (snap.exists()) { teamId = snap.data().teamId || null; displayName = snap.data().name || user.email; }
+                } catch (e) { console.error(e); }
+                if (!teamId) { showLoginError('No team assigned. Contact your admin.'); await signOut(auth); return; }
+                currentTeamId = teamId; currentUserName = displayName;
                 document.getElementById('userEmailDisplay').textContent = displayName + ' — ' + teamId;
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
-                initializeZoneGrid();
-                listenForReadings();
-                checkForExistingDraft();
+                initZoneGrid('zoneGrid', 'moisture', moistureTypes);
+                initZoneGrid('cleggZoneGrid', 'clegg', cleggTypes);
+                listenForMoistureReadings();
+                listenForCleggReadings();
+                checkForDraft('moisture');
+                checkForDraft('clegg');
             } else {
                 currentUser = null; currentTeamId = null; currentUserName = null;
-                if (unsubscribeReadings) { unsubscribeReadings(); unsubscribeReadings = null; }
-                readingsHistory = [];
+                if (unsubMoisture) { unsubMoisture(); unsubMoisture = null; }
+                if (unsubClegg) { unsubClegg(); unsubClegg = null; }
+                moistureHistory = []; cleggHistory = [];
                 document.getElementById('loginScreen').style.display = 'flex';
                 document.getElementById('mainApp').style.display = 'none';
             }
@@ -852,28 +1032,31 @@
             const errEl = document.getElementById('loginError');
             errEl.style.display = 'none';
             if (!email || !password) { errEl.textContent = 'Please enter your email and password.'; errEl.style.display = 'block'; return; }
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (err) {
-                errEl.textContent = 'Invalid email or password. Please try again.'; errEl.style.display = 'block';
-            }
+            try { await signInWithEmailAndPassword(auth, email, password); }
+            catch (err) { errEl.textContent = 'Invalid email or password.'; errEl.style.display = 'block'; }
         });
+        document.getElementById('loginPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('loginBtn').click(); });
+        document.getElementById('logoutBtn').addEventListener('click', async () => { await signOut(auth); showToast('Logged out.'); });
+        function showLoginError(msg) { const e = document.getElementById('loginError'); e.textContent = msg; e.style.display = 'block'; }
 
-        document.getElementById('loginPassword').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') document.getElementById('loginBtn').click();
-        });
+        // ================================================================
+        //  TOP-LEVEL TABS
+        // ================================================================
+        document.getElementById('tabMoisture').addEventListener('click', () => switchMainTab('moisture'));
+        document.getElementById('tabClegg').addEventListener('click', () => switchMainTab('clegg'));
 
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            await signOut(auth); showToast('Logged out successfully.');
-        });
-
-        function showToastLogin(msg) {
-            const errEl = document.getElementById('loginError');
-            errEl.textContent = msg; errEl.style.display = 'block';
+        function switchMainTab(tab) {
+            document.getElementById('tabMoisture').classList.toggle('active', tab === 'moisture');
+            document.getElementById('tabClegg').classList.toggle('active', tab === 'clegg');
+            document.getElementById('panelMoisture').classList.toggle('active', tab === 'moisture');
+            document.getElementById('panelClegg').classList.toggle('active', tab === 'clegg');
         }
 
-        function initializeZoneGrid() {
-            const grid = document.getElementById('zoneGrid');
+        // ================================================================
+        //  ZONE GRID BUILDER (shared for both tabs)
+        // ================================================================
+        function initZoneGrid(gridId, prefix, types) {
+            const grid = document.getElementById(gridId);
             grid.innerHTML = '';
             zones.forEach((zone, zoneIndex) => {
                 const card = document.createElement('div');
@@ -882,7 +1065,7 @@
                 zoneName.className = 'zone-name';
                 zoneName.textContent = zone;
                 card.appendChild(zoneName);
-                readingTypes.forEach(type => {
+                types.forEach(type => {
                     const typeSection = document.createElement('div');
                     typeSection.className = 'reading-type-section ' + type;
                     const typeLabel = document.createElement('div');
@@ -900,78 +1083,106 @@
                         const input = document.createElement('input');
                         input.type = 'number'; input.step = '0.1'; input.min = '0'; input.placeholder = '0.0';
                         input.inputMode = 'decimal'; input.pattern = '[0-9]*\\.?[0-9]*';
-                        input.id = 'zone-' + zoneIndex + '-' + type + '-reading-' + i;
-                        input.addEventListener('input', () => updateZoneAverage(zoneIndex, type));
+                        input.id = prefix + '-zone-' + zoneIndex + '-' + type + '-' + i;
+                        input.addEventListener('input', () => updateAverage(prefix, zoneIndex, type));
                         inputWrapper.appendChild(input);
                         readingInputs.appendChild(inputWrapper);
                     }
                     typeSection.appendChild(readingInputs);
-                    const averageDiv = document.createElement('div');
-                    averageDiv.className = 'zone-average ' + type;
-                    averageDiv.innerHTML = '<div class="zone-average-label ' + type + '">' + type.toUpperCase() + ' Average</div><div class="zone-average-value ' + type + '" id="avg-' + zoneIndex + '-' + type + '">--</div>';
-                    typeSection.appendChild(averageDiv);
+                    const avgDiv = document.createElement('div');
+                    avgDiv.className = 'zone-average ' + type;
+                    avgDiv.innerHTML = '<div class="zone-average-label ' + type + '">' + type.toUpperCase() + ' Average</div><div class="zone-average-value ' + type + '" id="' + prefix + '-avg-' + zoneIndex + '-' + type + '">--</div>';
+                    typeSection.appendChild(avgDiv);
                     card.appendChild(typeSection);
                 });
                 grid.appendChild(card);
             });
         }
 
-        function updateZoneAverage(zoneIndex, type) {
+        function updateAverage(prefix, zoneIndex, type) {
             const readings = [];
             for (let i = 1; i <= 6; i++) {
-                const val = parseFloat(document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i).value);
-                if (!isNaN(val) && val > 0) readings.push(val);
+                const el = document.getElementById(prefix + '-zone-' + zoneIndex + '-' + type + '-' + i);
+                if (el) { const val = parseFloat(el.value); if (!isNaN(val) && val > 0) readings.push(val); }
             }
-            const avgEl = document.getElementById('avg-' + zoneIndex + '-' + type);
-            avgEl.textContent = readings.length > 0 ? (readings.reduce((s, v) => s + v, 0) / readings.length).toFixed(1) : '--';
+            const avgEl = document.getElementById(prefix + '-avg-' + zoneIndex + '-' + type);
+            if (avgEl) avgEl.textContent = readings.length > 0 ? (readings.reduce((s,v)=>s+v,0)/readings.length).toFixed(1) : '--';
         }
 
-        async function submitReadings() {
+        // ================================================================
+        //  MOISTURE SUBMIT
+        // ================================================================
+        async function submitMoistureReadings() {
             if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
             const enteredBy = document.getElementById('enteredBy').value.trim();
-            const tempHighVal = document.getElementById('tempHigh').value.trim();
-            const tempLowVal = document.getElementById('tempLow').value.trim();
+            const tempHigh = parseFloat(document.getElementById('tempHigh').value) || null;
+            const tempLow = parseFloat(document.getElementById('tempLow').value) || null;
             const weatherCondition = document.getElementById('weatherCondition').value || null;
             const roofStatus = document.getElementById('roofStatus').value || null;
-            const tempHigh = tempHighVal === '' ? null : parseFloat(tempHighVal);
-            const tempLow = tempLowVal === '' ? null : parseFloat(tempLowVal);
-            const reading = {
-                timestamp: Timestamp.now(), date: new Date().toLocaleString(),
-                enteredBy: enteredBy || null,
-                tempHigh: isNaN(tempHigh) ? null : tempHigh,
-                tempLow: isNaN(tempLow) ? null : tempLow,
-                weatherCondition, roofStatus, zones: []
-            };
+            const reading = { timestamp: Timestamp.now(), date: new Date().toLocaleString(), enteredBy: enteredBy || null, tempHigh, tempLow, weatherCondition, roofStatus, zones: [] };
             let hasData = false;
-            zones.forEach((zone, zoneIndex) => {
+            zones.forEach((zone, zi) => {
                 const zoneEntry = { name: zone, tdr: { readings: [], average: null }, shear: { readings: [], average: null } };
-                readingTypes.forEach(type => {
+                moistureTypes.forEach(type => {
                     const vals = [];
                     for (let i = 1; i <= 6; i++) {
-                        const val = parseFloat(document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i).value);
-                        if (!isNaN(val) && val > 0) { vals.push(val); hasData = true; }
+                        const el = document.getElementById('moisture-zone-' + zi + '-' + type + '-' + i);
+                        if (el) { const val = parseFloat(el.value); if (!isNaN(val) && val > 0) { vals.push(val); hasData = true; } }
                     }
                     zoneEntry[type].readings = vals;
-                    if (vals.length > 0) zoneEntry[type].average = vals.reduce((s, v) => s + v, 0) / vals.length;
+                    if (vals.length > 0) zoneEntry[type].average = vals.reduce((s,v)=>s+v,0)/vals.length;
                 });
                 reading.zones.push(zoneEntry);
             });
-            if (!hasData) { showToast('Please enter at least one reading before submitting.'); return; }
+            if (!hasData) { showToast('Please enter at least one reading.'); return; }
             try {
-                await addDoc(readingsCol(), reading);
-                showToast('Readings saved!');
-                clearForm(false);
-                try { await deleteDoc(draftDocRef()); } catch (e) {}
-                showDraftNotice(false);
-            } catch (error) {
-                console.error('Error saving to Firebase:', error);
-                showToast('Error saving — check console for details.');
-            }
+                await addDoc(moistureCol(), reading);
+                showToast('Moisture readings saved!');
+                clearMoistureForm(false);
+                try { await deleteDoc(moistureDraftRef()); } catch(e) {}
+                showDraftNotice('moisture', false);
+            } catch(err) { console.error(err); showToast('Error saving — check console.'); }
         }
 
-        async function saveDraft() {
+        // ================================================================
+        //  CLEGG SUBMIT
+        // ================================================================
+        async function submitCleggReadings() {
             if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
-            const draftData = {
+            const enteredBy = document.getElementById('cleggEnteredBy').value.trim();
+            const tempHigh = parseFloat(document.getElementById('cleggTempHigh').value) || null;
+            const tempLow = parseFloat(document.getElementById('cleggTempLow').value) || null;
+            const weatherCondition = document.getElementById('cleggWeather').value || null;
+            const roofStatus = document.getElementById('cleggRoofStatus').value || null;
+            const reading = { timestamp: Timestamp.now(), date: new Date().toLocaleString(), enteredBy: enteredBy || null, tempHigh, tempLow, weatherCondition, roofStatus, zones: [] };
+            let hasData = false;
+            zones.forEach((zone, zi) => {
+                const zoneEntry = { name: zone, clegg: { readings: [], average: null } };
+                const vals = [];
+                for (let i = 1; i <= 6; i++) {
+                    const el = document.getElementById('clegg-zone-' + zi + '-clegg-' + i);
+                    if (el) { const val = parseFloat(el.value); if (!isNaN(val) && val > 0) { vals.push(val); hasData = true; } }
+                }
+                zoneEntry.clegg.readings = vals;
+                if (vals.length > 0) zoneEntry.clegg.average = vals.reduce((s,v)=>s+v,0)/vals.length;
+                reading.zones.push(zoneEntry);
+            });
+            if (!hasData) { showToast('Please enter at least one Clegg reading.'); return; }
+            try {
+                await addDoc(cleggCol(), reading);
+                showToast('Clegg readings saved!');
+                clearCleggForm(false);
+                try { await deleteDoc(cleggDraftRef()); } catch(e) {}
+                showDraftNotice('clegg', false);
+            } catch(err) { console.error(err); showToast('Error saving — check console.'); }
+        }
+
+        // ================================================================
+        //  DRAFT — MOISTURE
+        // ================================================================
+        async function saveMoistureDraft() {
+            if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
+            const draft = {
                 enteredBy: document.getElementById('enteredBy').value.trim(),
                 tempHigh: document.getElementById('tempHigh').value.trim(),
                 tempLow: document.getElementById('tempLow').value.trim(),
@@ -979,29 +1190,24 @@
                 roofStatus: document.getElementById('roofStatus').value,
                 savedAt: Timestamp.now(), zones: {}
             };
-            zones.forEach((zone, zoneIndex) => {
-                draftData.zones[String(zoneIndex)] = {};
-                readingTypes.forEach(type => {
-                    draftData.zones[String(zoneIndex)][type] = {};
+            zones.forEach((zone, zi) => {
+                draft.zones[String(zi)] = {};
+                moistureTypes.forEach(type => {
+                    draft.zones[String(zi)][type] = {};
                     for (let i = 1; i <= 6; i++) {
-                        draftData.zones[String(zoneIndex)][type][String(i)] = document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i).value || '';
+                        const el = document.getElementById('moisture-zone-' + zi + '-' + type + '-' + i);
+                        draft.zones[String(zi)][type][String(i)] = el ? el.value || '' : '';
                     }
                 });
             });
-            try {
-                await setDoc(draftDocRef(), draftData);
-                showDraftNotice(true);
-                showToast('Draft saved! You can close and come back later.');
-            } catch (error) {
-                console.error('Error saving draft:', error);
-                showToast('Error saving draft — check console.');
-            }
+            try { await setDoc(moistureDraftRef(), draft); showDraftNotice('moisture', true); showToast('Draft saved!'); }
+            catch(err) { console.error(err); showToast('Error saving draft.'); }
         }
 
-        async function loadDraft() {
+        async function loadMoistureDraft() {
             if (!currentUser || !currentTeamId) return;
             try {
-                const snap = await getDoc(draftDocRef());
+                const snap = await getDoc(moistureDraftRef());
                 if (!snap.exists()) { showToast('No draft found.'); return; }
                 const d = snap.data();
                 document.getElementById('enteredBy').value = d.enteredBy || '';
@@ -1009,136 +1215,183 @@
                 document.getElementById('tempLow').value = d.tempLow || '';
                 document.getElementById('weatherCondition').value = d.weatherCondition || '';
                 document.getElementById('roofStatus').value = d.roofStatus || '';
-                zones.forEach((zone, zoneIndex) => {
-                    readingTypes.forEach(type => {
+                zones.forEach((zone, zi) => {
+                    moistureTypes.forEach(type => {
                         for (let i = 1; i <= 6; i++) {
-                            document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i).value = d.zones?.[String(zoneIndex)]?.[type]?.[String(i)] || '';
+                            const el = document.getElementById('moisture-zone-' + zi + '-' + type + '-' + i);
+                            if (el) el.value = d.zones?.[String(zi)]?.[type]?.[String(i)] || '';
                         }
-                        updateZoneAverage(zoneIndex, type);
+                        updateAverage('moisture', zi, type);
                     });
                 });
-                showToast('Draft restored! Continue where you left off.');
-            } catch (error) {
-                console.error('Error loading draft:', error);
-                showToast('Error loading draft — check console.');
-            }
+                showToast('Moisture draft restored!');
+            } catch(err) { console.error(err); showToast('Error loading draft.'); }
         }
 
-        async function discardDraft() {
+        async function discardMoistureDraft() {
+            if (!currentUser || !currentTeamId) return;
+            try { await deleteDoc(moistureDraftRef()); showDraftNotice('moisture', false); showToast('Draft discarded.'); }
+            catch(e) { showToast('Error discarding draft.'); }
+        }
+
+        // ================================================================
+        //  DRAFT — CLEGG
+        // ================================================================
+        async function saveCleggDraft() {
+            if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
+            const draft = {
+                enteredBy: document.getElementById('cleggEnteredBy').value.trim(),
+                tempHigh: document.getElementById('cleggTempHigh').value.trim(),
+                tempLow: document.getElementById('cleggTempLow').value.trim(),
+                weatherCondition: document.getElementById('cleggWeather').value,
+                roofStatus: document.getElementById('cleggRoofStatus').value,
+                savedAt: Timestamp.now(), zones: {}
+            };
+            zones.forEach((zone, zi) => {
+                draft.zones[String(zi)] = { clegg: {} };
+                for (let i = 1; i <= 6; i++) {
+                    const el = document.getElementById('clegg-zone-' + zi + '-clegg-' + i);
+                    draft.zones[String(zi)].clegg[String(i)] = el ? el.value || '' : '';
+                }
+            });
+            try { await setDoc(cleggDraftRef(), draft); showDraftNotice('clegg', true); showToast('Clegg draft saved!'); }
+            catch(err) { console.error(err); showToast('Error saving draft.'); }
+        }
+
+        async function loadCleggDraft() {
             if (!currentUser || !currentTeamId) return;
             try {
-                await deleteDoc(draftDocRef());
-                showDraftNotice(false);
-                showToast('Draft discarded.');
-            } catch (error) { showToast('Error discarding draft.'); }
+                const snap = await getDoc(cleggDraftRef());
+                if (!snap.exists()) { showToast('No Clegg draft found.'); return; }
+                const d = snap.data();
+                document.getElementById('cleggEnteredBy').value = d.enteredBy || '';
+                document.getElementById('cleggTempHigh').value = d.tempHigh || '';
+                document.getElementById('cleggTempLow').value = d.tempLow || '';
+                document.getElementById('cleggWeather').value = d.weatherCondition || '';
+                document.getElementById('cleggRoofStatus').value = d.roofStatus || '';
+                zones.forEach((zone, zi) => {
+                    for (let i = 1; i <= 6; i++) {
+                        const el = document.getElementById('clegg-zone-' + zi + '-clegg-' + i);
+                        if (el) el.value = d.zones?.[String(zi)]?.clegg?.[String(i)] || '';
+                    }
+                    updateAverage('clegg', zi, 'clegg');
+                });
+                showToast('Clegg draft restored!');
+            } catch(err) { console.error(err); showToast('Error loading Clegg draft.'); }
         }
 
-        function showDraftNotice(show) {
-            const el = document.getElementById('draftNotice');
+        async function discardCleggDraft() {
+            if (!currentUser || !currentTeamId) return;
+            try { await deleteDoc(cleggDraftRef()); showDraftNotice('clegg', false); showToast('Clegg draft discarded.'); }
+            catch(e) { showToast('Error discarding draft.'); }
+        }
+
+        async function checkForDraft(which) {
+            if (!currentUser || !currentTeamId) return;
+            try {
+                const ref = which === 'clegg' ? cleggDraftRef() : moistureDraftRef();
+                const snap = await getDoc(ref);
+                if (snap.exists() && snap.data().zones) showDraftNotice(which, true);
+            } catch(e) { console.error(e); }
+        }
+
+        function showDraftNotice(which, show) {
+            const id = which === 'clegg' ? 'cleggDraftNotice' : 'draftNotice';
+            const el = document.getElementById(id);
             if (show) el.classList.add('show'); else el.classList.remove('show');
         }
 
-        async function checkForExistingDraft() {
-            if (!currentUser || !currentTeamId) return;
-            try {
-                const snap = await getDoc(draftDocRef());
-                if (snap.exists() && snap.data().zones) showDraftNotice(true);
-            } catch (e) { console.error('Error checking for draft:', e); }
-        }
-
-        function clearForm(notify) {
-            zones.forEach((zone, zoneIndex) => {
-                readingTypes.forEach(type => {
-                    for (let i = 1; i <= 6; i++) document.getElementById('zone-' + zoneIndex + '-' + type + '-reading-' + i).value = '';
-                    updateZoneAverage(zoneIndex, type);
+        // ================================================================
+        //  CLEAR FORMS
+        // ================================================================
+        function clearMoistureForm(notify) {
+            zones.forEach((zone, zi) => {
+                moistureTypes.forEach(type => {
+                    for (let i = 1; i <= 6; i++) { const el = document.getElementById('moisture-zone-' + zi + '-' + type + '-' + i); if (el) el.value = ''; }
+                    updateAverage('moisture', zi, type);
                 });
             });
-            document.getElementById('enteredBy').value = '';
-            document.getElementById('tempHigh').value = '';
-            document.getElementById('tempLow').value = '';
+            ['enteredBy','tempHigh','tempLow'].forEach(id => { document.getElementById(id).value = ''; });
             document.getElementById('weatherCondition').value = '';
             document.getElementById('roofStatus').value = '';
             if (notify !== false) showToast('Form cleared.');
         }
 
-        function listenForReadings() {
-            if (unsubscribeReadings) unsubscribeReadings();
-            const q = query(readingsCol(), orderBy('timestamp', 'asc'));
-            unsubscribeReadings = onSnapshot(q, (snapshot) => {
-                readingsHistory = [];
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    readingsHistory.push({
-                        id: docSnap.id,
-                        date: data.date || data.timestamp?.toDate().toLocaleString() || 'Unknown',
-                        enteredBy: data.enteredBy || null,
-                        tempHigh: data.tempHigh ?? null, tempLow: data.tempLow ?? null,
-                        weatherCondition: data.weatherCondition || null,
-                        roofStatus: data.roofStatus || null, zones: data.zones || []
-                    });
-                });
-                readingsHistory.reverse();
-                updateChart(); updateReportTables();
-            }, (error) => {
-                console.error('Firestore listener error:', error);
-                showToast('Error loading data from Firebase.');
+        function clearCleggForm(notify) {
+            zones.forEach((zone, zi) => {
+                for (let i = 1; i <= 6; i++) { const el = document.getElementById('clegg-zone-' + zi + '-clegg-' + i); if (el) el.value = ''; }
+                updateAverage('clegg', zi, 'clegg');
             });
+            ['cleggEnteredBy','cleggTempHigh','cleggTempLow'].forEach(id => { document.getElementById(id).value = ''; });
+            document.getElementById('cleggWeather').value = '';
+            document.getElementById('cleggRoofStatus').value = '';
+            if (notify !== false) showToast('Clegg form cleared.');
         }
 
-        function parseReadingDate(dateStr) { const d = new Date(dateStr); return isNaN(d.getTime()) ? null : d; }
+        // ================================================================
+        //  FIRESTORE LISTENERS
+        // ================================================================
+        function listenForMoistureReadings() {
+            if (unsubMoisture) unsubMoisture();
+            const q = query(moistureCol(), orderBy('timestamp', 'asc'));
+            unsubMoisture = onSnapshot(q, (snap) => {
+                moistureHistory = [];
+                snap.forEach(ds => {
+                    const d = ds.data();
+                    moistureHistory.push({ id: ds.id, date: d.date || d.timestamp?.toDate().toLocaleString() || 'Unknown', enteredBy: d.enteredBy || null, tempHigh: d.tempHigh ?? null, tempLow: d.tempLow ?? null, weatherCondition: d.weatherCondition || null, roofStatus: d.roofStatus || null, zones: d.zones || [] });
+                });
+                moistureHistory.reverse();
+                updateMoistureReports(); updateChart();
+            }, (err) => { console.error(err); showToast('Error loading moisture data.'); });
+        }
 
-        function getFilteredReadings() {
+        function listenForCleggReadings() {
+            if (unsubClegg) unsubClegg();
+            const q = query(cleggCol(), orderBy('timestamp', 'asc'));
+            unsubClegg = onSnapshot(q, (snap) => {
+                cleggHistory = [];
+                snap.forEach(ds => {
+                    const d = ds.data();
+                    cleggHistory.push({ id: ds.id, date: d.date || d.timestamp?.toDate().toLocaleString() || 'Unknown', enteredBy: d.enteredBy || null, tempHigh: d.tempHigh ?? null, tempLow: d.tempLow ?? null, weatherCondition: d.weatherCondition || null, roofStatus: d.roofStatus || null, zones: d.zones || [] });
+                });
+                cleggHistory.reverse();
+                updateCleggReport(); updateCleggChart();
+            }, (err) => { console.error(err); showToast('Error loading Clegg data.'); });
+        }
+
+        // ================================================================
+        //  DATE FILTER HELPERS
+        // ================================================================
+        function parseDate(str) { const d = new Date(str); return isNaN(d.getTime()) ? null : d; }
+
+        function filterReadings(history, startOverride, endOverride) {
             const now = new Date();
-            let startDate, endDate;
-            if (customFilterStart && customFilterEnd) {
-                startDate = new Date(customFilterStart + 'T00:00:00');
-                endDate = new Date(customFilterEnd + 'T23:59:59');
+            let start, end;
+            if (startOverride && endOverride) {
+                start = new Date(startOverride + 'T00:00:00');
+                end = new Date(endOverride + 'T23:59:59');
             } else {
-                endDate = now;
-                startDate = new Date(now);
-                startDate.setDate(startDate.getDate() - 7);
-                startDate.setHours(0, 0, 0, 0);
+                end = now; start = new Date(now); start.setDate(start.getDate() - 7); start.setHours(0,0,0,0);
             }
-            return readingsHistory.filter(r => { const d = parseReadingDate(r.date); return d && d >= startDate && d <= endDate; });
+            return history.filter(r => { const d = parseDate(r.date); return d && d >= start && d <= end; });
         }
 
-        function applyDateFilter() {
-            const s = document.getElementById('filterStart').value;
-            const e = document.getElementById('filterEnd').value;
-            if (!s || !e) { showToast('Please select both a start and end date.'); return; }
-            if (s > e) { showToast('Start date must be before end date.'); return; }
-            customFilterStart = s; customFilterEnd = e;
-            document.getElementById('filterInfo').textContent = 'Showing ' + s + ' to ' + e;
-            updateReportTables();
-        }
-
-        function resetDateFilter() {
-            customFilterStart = null; customFilterEnd = null;
-            document.getElementById('filterStart').value = '';
-            document.getElementById('filterEnd').value = '';
-            document.getElementById('filterInfo').textContent = 'Showing last 7 days';
-            updateReportTables();
-        }
-
-        function escapeHTML(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
-
-        function updateReportTables() {
+        // ================================================================
+        //  MOISTURE REPORTS
+        // ================================================================
+        function updateMoistureReports() {
             const tdrBody = document.getElementById('tdrReportBody');
             const shearBody = document.getElementById('shearReportBody');
             tdrBody.innerHTML = ''; shearBody.innerHTML = '';
-            const filtered = getFilteredReadings();
+            const filtered = filterReadings(moistureHistory, moistureFilterStart, moistureFilterEnd);
             let hasTdr = false, hasShear = false;
-            filtered.forEach(reading => {
-                const weatherCells =
-                    '<td>' + escapeHTML(reading.tempHigh != null ? String(reading.tempHigh) : '\u2014') + '</td>' +
-                    '<td>' + escapeHTML(reading.tempLow != null ? String(reading.tempLow) : '\u2014') + '</td>' +
-                    '<td>' + escapeHTML(reading.weatherCondition || '\u2014') + '</td>' +
-                    '<td>' + escapeHTML(reading.roofStatus || '\u2014') + '</td>';
-                let tdrRow = '<tr><td style="text-align:left;">' + escapeHTML(reading.date) + '</td><td style="text-align:left;">' + escapeHTML(reading.enteredBy || '\u2014') + '</td>' + weatherCells;
-                let shearRow = '<tr><td style="text-align:left;">' + escapeHTML(reading.date) + '</td><td style="text-align:left;">' + escapeHTML(reading.enteredBy || '\u2014') + '</td>' + weatherCells;
+            filtered.forEach(r => {
+                const wc = '<td>' + e(r.tempHigh != null ? String(r.tempHigh) : '\u2014') + '</td><td>' + e(r.tempLow != null ? String(r.tempLow) : '\u2014') + '</td><td>' + e(r.weatherCondition || '\u2014') + '</td><td>' + e(r.roofStatus || '\u2014') + '</td>';
+                let tdrRow = '<tr><td style="text-align:left;">' + e(r.date) + '</td><td style="text-align:left;">' + e(r.enteredBy || '\u2014') + '</td>' + wc;
+                let shearRow = '<tr><td style="text-align:left;">' + e(r.date) + '</td><td style="text-align:left;">' + e(r.enteredBy || '\u2014') + '</td>' + wc;
                 let rowHasTdr = false, rowHasShear = false;
-                zones.forEach(zoneName => {
-                    const zd = reading.zones.find(z => z.name === zoneName);
+                zones.forEach(zn => {
+                    const zd = r.zones.find(z => z.name === zn);
                     if (zd && zd.tdr && zd.tdr.average != null) { tdrRow += '<td class="avg-cell tdr">' + zd.tdr.average.toFixed(1) + '</td>'; rowHasTdr = true; } else tdrRow += '<td>\u2014</td>';
                     if (zd && zd.shear && zd.shear.average != null) { shearRow += '<td class="avg-cell shear">' + zd.shear.average.toFixed(1) + '</td>'; rowHasShear = true; } else shearRow += '<td>\u2014</td>';
                 });
@@ -1152,159 +1405,248 @@
             document.getElementById('shearReportTable').style.display = hasShear ? 'table' : 'none';
         }
 
+        // ================================================================
+        //  CLEGG REPORT
+        // ================================================================
+        function updateCleggReport() {
+            const body = document.getElementById('cleggReportBody');
+            body.innerHTML = '';
+            const filtered = filterReadings(cleggHistory, cleggFilterStart, cleggFilterEnd);
+            let hasClegg = false;
+            filtered.forEach(r => {
+                const wc = '<td>' + e(r.tempHigh != null ? String(r.tempHigh) : '\u2014') + '</td><td>' + e(r.tempLow != null ? String(r.tempLow) : '\u2014') + '</td><td>' + e(r.weatherCondition || '\u2014') + '</td><td>' + e(r.roofStatus || '\u2014') + '</td>';
+                let row = '<tr><td style="text-align:left;">' + e(r.date) + '</td><td style="text-align:left;">' + e(r.enteredBy || '\u2014') + '</td>' + wc;
+                let rowHas = false;
+                zones.forEach(zn => {
+                    const zd = r.zones.find(z => z.name === zn);
+                    if (zd && zd.clegg && zd.clegg.average != null) { row += '<td class="avg-cell clegg">' + zd.clegg.average.toFixed(1) + '</td>'; rowHas = true; } else row += '<td>\u2014</td>';
+                });
+                row += '</tr>';
+                if (rowHas) { body.innerHTML += row; hasClegg = true; }
+            });
+            document.getElementById('cleggEmpty').style.display = hasClegg ? 'none' : 'block';
+            document.getElementById('cleggReportTable').style.display = hasClegg ? 'table' : 'none';
+        }
+
+        function e(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+        // ================================================================
+        //  DATE FILTER BUTTONS — MOISTURE
+        // ================================================================
+        document.getElementById('applyFilterBtn').addEventListener('click', () => {
+            const s = document.getElementById('filterStart').value, end = document.getElementById('filterEnd').value;
+            if (!s || !end) { showToast('Select both dates.'); return; }
+            if (s > end) { showToast('Start must be before end.'); return; }
+            moistureFilterStart = s; moistureFilterEnd = end;
+            document.getElementById('filterInfo').textContent = 'Showing ' + s + ' to ' + end;
+            updateMoistureReports();
+        });
+        document.getElementById('resetFilterBtn').addEventListener('click', () => {
+            moistureFilterStart = null; moistureFilterEnd = null;
+            document.getElementById('filterStart').value = ''; document.getElementById('filterEnd').value = '';
+            document.getElementById('filterInfo').textContent = 'Showing last 7 days';
+            updateMoistureReports();
+        });
+
+        // ================================================================
+        //  DATE FILTER BUTTONS — CLEGG
+        // ================================================================
+        document.getElementById('cleggApplyFilterBtn').addEventListener('click', () => {
+            const s = document.getElementById('cleggFilterStart').value, end = document.getElementById('cleggFilterEnd').value;
+            if (!s || !end) { showToast('Select both dates.'); return; }
+            if (s > end) { showToast('Start must be before end.'); return; }
+            cleggFilterStart = s; cleggFilterEnd = end;
+            document.getElementById('cleggFilterInfo').textContent = 'Showing ' + s + ' to ' + end;
+            updateCleggReport();
+        });
+        document.getElementById('cleggResetFilterBtn').addEventListener('click', () => {
+            cleggFilterStart = null; cleggFilterEnd = null;
+            document.getElementById('cleggFilterStart').value = ''; document.getElementById('cleggFilterEnd').value = '';
+            document.getElementById('cleggFilterInfo').textContent = 'Showing last 7 days';
+            updateCleggReport();
+        });
+
+        // ================================================================
+        //  CHARTS
+        // ================================================================
         const zoneColors = ['#2D74A6', '#E68A3C', '#4CAF50', '#9C27B0', '#F44336', '#00BCD4'];
+
+        document.getElementById('chartTabTdr').addEventListener('click', () => switchChart('tdr'));
+        document.getElementById('chartTabShear').addEventListener('click', () => switchChart('shear'));
 
         function switchChart(type) {
             activeChartType = type;
-            document.querySelectorAll('.chart-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.chartType === type));
+            document.querySelectorAll('.chart-tab').forEach(t => t.classList.toggle('active', t.dataset.chartType === type));
             updateChart();
         }
 
         function updateChart() {
-            const chartSvg = document.getElementById('chartSvg');
-            const chartLegend = document.getElementById('chartLegend');
-            if (readingsHistory.length === 0) {
-                chartSvg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--color-text-secondary)" font-size="14">No data to display</text>';
-                chartLegend.innerHTML = ''; return;
-            }
-            const chronological = [...readingsHistory].reverse();
+            const svg = document.getElementById('chartSvg');
+            const legend = document.getElementById('chartLegend');
+            if (moistureHistory.length === 0) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--color-text-secondary)" font-size="14">No data</text>'; legend.innerHTML = ''; return; }
+            drawChart(svg, legend, [...moistureHistory].reverse(), activeChartType, 'chartTooltip');
+        }
+
+        function updateCleggChart() {
+            const svg = document.getElementById('cleggChartSvg');
+            const legend = document.getElementById('cleggChartLegend');
+            if (cleggHistory.length === 0) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--color-text-secondary)" font-size="14">No data</text>'; legend.innerHTML = ''; return; }
+            drawChart(svg, legend, [...cleggHistory].reverse(), 'clegg', 'cleggChartTooltip');
+        }
+
+        function drawChart(svg, legend, chronological, type, tooltipId) {
             const zoneData = {};
             zones.forEach(z => { zoneData[z] = []; });
-            chronological.forEach((reading, index) => {
-                reading.zones.forEach(zone => {
-                    let avg = null;
-                    if (zone[activeChartType] && zone[activeChartType].average != null) avg = zone[activeChartType].average;
-                    if (avg !== null && zoneData[zone.name]) zoneData[zone.name].push({ index, value: avg, date: reading.date });
+            chronological.forEach((r, idx) => {
+                r.zones.forEach(zone => {
+                    if (zone[type] && zone[type].average != null && zoneData[zone.name]) zoneData[zone.name].push({ index: idx, value: zone[type].average, date: r.date });
                 });
             });
-            let allValues = [];
-            Object.values(zoneData).forEach(data => { allValues = allValues.concat(data.map(d => d.value)); });
-            if (allValues.length === 0) {
-                chartSvg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--color-text-secondary)" font-size="14">No ' + activeChartType.toUpperCase() + ' data to display</text>';
-                chartLegend.innerHTML = ''; return;
-            }
-            const padding = { top: 20, right: 20, bottom: 40, left: 50 };
-            const svgW = chartSvg.clientWidth || 800;
-            const svgH = chartSvg.clientHeight || 350;
-            const cW = svgW - padding.left - padding.right;
-            const cH = svgH - padding.top - padding.bottom;
-            const minV = Math.min(...allValues); const maxV = Math.max(...allValues); const range = maxV - minV || 1;
-            chartSvg.innerHTML = '';
+            let allVals = [];
+            Object.values(zoneData).forEach(d => { allVals = allVals.concat(d.map(p => p.value)); });
+            if (allVals.length === 0) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--color-text-secondary)" font-size="14">No ' + type.toUpperCase() + ' data</text>'; legend.innerHTML = ''; return; }
+            const pad = { top: 20, right: 20, bottom: 40, left: 50 };
+            const sw = svg.clientWidth || 800, sh = svg.clientHeight || 350;
+            const cw = sw - pad.left - pad.right, ch = sh - pad.top - pad.bottom;
+            const minV = Math.min(...allVals), maxV = Math.max(...allVals), range = maxV - minV || 1;
+            svg.innerHTML = '';
             for (let i = 0; i <= 5; i++) {
-                const y = padding.top + (cH / 5) * i; const val = maxV - (range / 5) * i;
-                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('x1', padding.left); line.setAttribute('y1', y); line.setAttribute('x2', svgW - padding.right); line.setAttribute('y2', y);
-                line.setAttribute('stroke', 'var(--color-border)'); line.setAttribute('stroke-width', '1'); line.setAttribute('opacity', '0.3');
-                chartSvg.appendChild(line);
-                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('x', padding.left - 10); text.setAttribute('y', y + 4); text.setAttribute('text-anchor', 'end');
-                text.setAttribute('fill', 'var(--color-text-secondary)'); text.setAttribute('font-size', '11');
-                text.textContent = val.toFixed(1); chartSvg.appendChild(text);
+                const y = pad.top + (ch/5)*i, val = maxV - (range/5)*i;
+                const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+                line.setAttribute('x1', pad.left); line.setAttribute('y1', y); line.setAttribute('x2', sw - pad.right); line.setAttribute('y2', y);
+                line.setAttribute('stroke','var(--color-border)'); line.setAttribute('stroke-width','1'); line.setAttribute('opacity','0.3');
+                svg.appendChild(line);
+                const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+                txt.setAttribute('x', pad.left-10); txt.setAttribute('y', y+4); txt.setAttribute('text-anchor','end');
+                txt.setAttribute('fill','var(--color-text-secondary)'); txt.setAttribute('font-size','11');
+                txt.textContent = val.toFixed(1); svg.appendChild(txt);
             }
-            chronological.forEach((reading, index) => {
-                const x = padding.left + (cW / (chronological.length - 1 || 1)) * index;
-                const shortDate = new Date(reading.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('x', x); text.setAttribute('y', svgH - padding.bottom + 20); text.setAttribute('text-anchor', 'middle');
-                text.setAttribute('fill', 'var(--color-text-secondary)'); text.setAttribute('font-size', '11');
-                text.textContent = shortDate; chartSvg.appendChild(text);
+            chronological.forEach((r, idx) => {
+                const x = pad.left + (cw/(chronological.length-1||1))*idx;
+                const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+                txt.setAttribute('x', x); txt.setAttribute('y', sh - pad.bottom + 20); txt.setAttribute('text-anchor','middle');
+                txt.setAttribute('fill','var(--color-text-secondary)'); txt.setAttribute('font-size','11');
+                txt.textContent = new Date(r.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}); svg.appendChild(txt);
             });
-            Object.keys(zoneData).forEach((zoneName, zi) => {
-                const data = zoneData[zoneName]; if (!data.length) return;
+            Object.keys(zoneData).forEach((zn, zi) => {
+                const data = zoneData[zn]; if (!data.length) return;
                 const color = zoneColors[zi % zoneColors.length];
-                let pathD = '';
+                let d = '';
                 data.forEach((pt, i) => {
-                    const x = padding.left + (cW / (chronological.length - 1 || 1)) * pt.index;
-                    const y = padding.top + cH - ((pt.value - minV) / range) * cH;
-                    pathD += (i === 0 ? 'M ' : ' L ') + x + ' ' + y;
+                    const x = pad.left + (cw/(chronological.length-1||1))*pt.index;
+                    const y = pad.top + ch - ((pt.value-minV)/range)*ch;
+                    d += (i===0?'M ':'L ') + x + ' ' + y;
                 });
-                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                path.setAttribute('d', pathD); path.setAttribute('class', 'chart-line'); path.setAttribute('stroke', color);
-                chartSvg.appendChild(path);
+                const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+                path.setAttribute('d', d); path.setAttribute('class','chart-line'); path.setAttribute('stroke', color); svg.appendChild(path);
                 data.forEach(pt => {
-                    const x = padding.left + (cW / (chronological.length - 1 || 1)) * pt.index;
-                    const y = padding.top + cH - ((pt.value - minV) / range) * cH;
-                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    circle.setAttribute('cx', x); circle.setAttribute('cy', y); circle.setAttribute('r', '4');
-                    circle.setAttribute('fill', color); circle.setAttribute('class', 'chart-point'); circle.style.cursor = 'pointer';
-                    circle.addEventListener('mouseenter', (e) => {
-                        const tip = document.getElementById('chartTooltip');
-                        tip.innerHTML = '<strong>' + zoneName + ' (' + activeChartType.toUpperCase() + ')</strong><br>' + pt.date + '<br>Value: ' + pt.value.toFixed(1);
-                        tip.style.left = (e.pageX + 10) + 'px'; tip.style.top = (e.pageY - 40) + 'px'; tip.classList.add('show');
+                    const x = pad.left + (cw/(chronological.length-1||1))*pt.index;
+                    const y = pad.top + ch - ((pt.value-minV)/range)*ch;
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+                    circle.setAttribute('cx', x); circle.setAttribute('cy', y); circle.setAttribute('r','4');
+                    circle.setAttribute('fill', color); circle.setAttribute('class','chart-point'); circle.style.cursor='pointer';
+                    circle.addEventListener('mouseenter', (ev) => {
+                        const tip = document.getElementById(tooltipId);
+                        tip.innerHTML = '<strong>' + zn + ' (' + type.toUpperCase() + ')</strong><br>' + pt.date + '<br>Value: ' + pt.value.toFixed(1);
+                        tip.style.left = (ev.pageX+10)+'px'; tip.style.top = (ev.pageY-40)+'px'; tip.classList.add('show');
                     });
-                    circle.addEventListener('mouseleave', () => document.getElementById('chartTooltip').classList.remove('show'));
-                    chartSvg.appendChild(circle);
+                    circle.addEventListener('mouseleave', () => document.getElementById(tooltipId).classList.remove('show'));
+                    svg.appendChild(circle);
                 });
             });
-            chartLegend.innerHTML = '';
-            zones.forEach((zone, i) => {
+            legend.innerHTML = '';
+            zones.forEach((zn, i) => {
                 const item = document.createElement('div'); item.className = 'legend-item';
                 const cb = document.createElement('div'); cb.className = 'legend-color'; cb.style.backgroundColor = zoneColors[i % zoneColors.length];
-                const lbl = document.createElement('span'); lbl.textContent = zone;
-                item.appendChild(cb); item.appendChild(lbl); chartLegend.appendChild(item);
+                const lbl = document.createElement('span'); lbl.textContent = zn;
+                item.appendChild(cb); item.appendChild(lbl); legend.appendChild(item);
             });
         }
 
-        function exportData() {
-            if (readingsHistory.length === 0) { showToast('No data to export.'); return; }
-            try {
-                let csv = 'Date,Entered By,Type,Left Field,Center Field,Right Field,1st Base Line,3rd Base Line,Infield\n';
-                readingsHistory.forEach(reading => {
-                    const base = ['"' + reading.date + '"', '"' + (reading.enteredBy || '') + '"'];
-                    const tdrRow = [...base, 'TDR'];
-                    zones.forEach(zn => { const z = reading.zones.find(zz => zz.name === zn); if (z && z.tdr && z.tdr.average != null) tdrRow.push(z.tdr.average.toFixed(1)); else tdrRow.push(''); });
-                    csv += tdrRow.join(',') + '\n';
-                    const shearRow = [...base, 'Shear'];
-                    zones.forEach(zn => { const z = reading.zones.find(zz => zz.name === zn); if (z && z.shear && z.shear.average != null) shearRow.push(z.shear.average.toFixed(1)); else shearRow.push(''); });
-                    csv += shearRow.join(',') + '\n';
+        // ================================================================
+        //  EXPORT
+        // ================================================================
+        function exportMoisture() {
+            if (moistureHistory.length === 0) { showToast('No data to export.'); return; }
+            let csv = 'Date,Entered By,Type,Left Field,Center Field,Right Field,1st Base Line,3rd Base Line,Infield\n';
+            moistureHistory.forEach(r => {
+                const base = ['"'+r.date+'"', '"'+(r.enteredBy||'')+'"'];
+                ['tdr','shear'].forEach(t => {
+                    const row = [...base, t.toUpperCase()];
+                    zones.forEach(zn => { const z = r.zones.find(zz=>zz.name===zn); row.push((z&&z[t]&&z[t].average!=null)?z[t].average.toFixed(1):''); });
+                    csv += row.join(',') + '\n';
                 });
-                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url; link.download = 'field-readings-' + new Date().toISOString().split('T')[0] + '.csv';
-                document.body.appendChild(link);
-                setTimeout(() => { link.click(); setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 100); }, 10);
-                showToast('Exporting ' + readingsHistory.length + ' reading(s)...');
-            } catch (error) { showToast('Error exporting.'); }
+            });
+            downloadCSV(csv, 'moisture-readings-' + new Date().toISOString().split('T')[0] + '.csv');
+            showToast('Exporting moisture data...');
         }
 
+        function exportClegg() {
+            if (cleggHistory.length === 0) { showToast('No Clegg data to export.'); return; }
+            let csv = 'Date,Entered By,Left Field,Center Field,Right Field,1st Base Line,3rd Base Line,Infield\n';
+            cleggHistory.forEach(r => {
+                const row = ['"'+r.date+'"', '"'+(r.enteredBy||'')+'"'];
+                zones.forEach(zn => { const z = r.zones.find(zz=>zz.name===zn); row.push((z&&z.clegg&&z.clegg.average!=null)?z.clegg.average.toFixed(1):''); });
+                csv += row.join(',') + '\n';
+            });
+            downloadCSV(csv, 'clegg-readings-' + new Date().toISOString().split('T')[0] + '.csv');
+            showToast('Exporting Clegg data...');
+        }
+
+        function downloadCSV(csv, filename) {
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url; link.download = filename; document.body.appendChild(link);
+            setTimeout(() => { link.click(); setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 100); }, 10);
+        }
+
+        // ================================================================
+        //  IMPORT
+        // ================================================================
         function importData(event) {
             if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
             const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
-            reader.onload = async function(e) {
+            reader.onload = async function(ev) {
                 try {
-                    const imported = JSON.parse(e.target.result);
+                    const imported = JSON.parse(ev.target.result);
                     if (!Array.isArray(imported)) { showToast('Invalid file format.'); return; }
                     let count = 0;
-                    for (const r of imported) {
-                        await addDoc(readingsCol(), { timestamp: Timestamp.now(), date: r.date || new Date().toLocaleString(), enteredBy: r.enteredBy || null, zones: r.zones || [] });
-                        count++;
-                    }
+                    for (const r of imported) { await addDoc(moistureCol(), { timestamp: Timestamp.now(), date: r.date || new Date().toLocaleString(), enteredBy: r.enteredBy || null, zones: r.zones || [] }); count++; }
                     showToast('Imported ' + count + ' reading(s)!');
-                } catch (err) { showToast('Error reading file.'); }
+                } catch(err) { showToast('Error reading file.'); }
             };
             reader.readAsText(file); event.target.value = '';
         }
 
+        // ================================================================
+        //  TOAST
+        // ================================================================
         function showToast(message) {
             const toast = document.getElementById('toast');
             toast.textContent = message; toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        document.getElementById('clearBtn').addEventListener('click', () => clearForm());
-        document.getElementById('submitBtn').addEventListener('click', () => submitReadings().catch(err => { console.error(err); showToast('Error submitting.'); }));
-        document.getElementById('saveDraftBtn').addEventListener('click', () => saveDraft().catch(err => { console.error(err); showToast('Error saving draft.'); }));
-        document.getElementById('loadDraftBtn').addEventListener('click', () => loadDraft().catch(err => { console.error(err); showToast('Error loading draft.'); }));
-        document.getElementById('discardDraftBtn').addEventListener('click', () => discardDraft().catch(err => { console.error(err); showToast('Error discarding draft.'); }));
-        document.getElementById('exportBtn').addEventListener('click', () => exportData());
+        // ================================================================
+        //  EVENT LISTENERS
+        // ================================================================
+        document.getElementById('clearBtn').addEventListener('click', () => clearMoistureForm());
+        document.getElementById('submitBtn').addEventListener('click', () => submitMoistureReadings().catch(err => { console.error(err); showToast('Error submitting.'); }));
+        document.getElementById('saveDraftBtn').addEventListener('click', () => saveMoistureDraft().catch(err => { console.error(err); showToast('Error saving draft.'); }));
+        document.getElementById('loadDraftBtn').addEventListener('click', () => loadMoistureDraft().catch(err => { console.error(err); showToast('Error loading draft.'); }));
+        document.getElementById('discardDraftBtn').addEventListener('click', () => discardMoistureDraft().catch(err => { console.error(err); showToast('Error discarding draft.'); }));
+        document.getElementById('exportBtn').addEventListener('click', () => exportMoisture());
         document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
         document.getElementById('importFile').addEventListener('change', (e) => importData(e));
-        document.getElementById('applyFilterBtn').addEventListener('click', () => applyDateFilter());
-        document.getElementById('resetFilterBtn').addEventListener('click', () => resetDateFilter());
-        document.getElementById('chartTabTdr').addEventListener('click', () => switchChart('tdr'));
-        document.getElementById('chartTabShear').addEventListener('click', () => switchChart('shear'));
+
+        document.getElementById('cleggClearBtn').addEventListener('click', () => clearCleggForm());
+        document.getElementById('cleggSubmitBtn').addEventListener('click', () => submitCleggReadings().catch(err => { console.error(err); showToast('Error submitting.'); }));
+        document.getElementById('cleggSaveDraftBtn').addEventListener('click', () => saveCleggDraft().catch(err => { console.error(err); showToast('Error saving draft.'); }));
+        document.getElementById('cleggLoadDraftBtn').addEventListener('click', () => loadCleggDraft().catch(err => { console.error(err); showToast('Error loading Clegg draft.'); }));
+        document.getElementById('cleggDiscardDraftBtn').addEventListener('click', () => discardCleggDraft().catch(err => { console.error(err); showToast('Error discarding draft.'); }));
+        document.getElementById('cleggExportBtn').addEventListener('click', () => exportClegg());
     </script>
 </body>
 </html>
