@@ -1,0 +1,2078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>GroundsCrew Field Tracker</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#21808d">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="GroundsCrew">
+    <meta name="description" content="Track TDR, Shear, and Clegg readings across baseball field zones">
+
+    <!-- PWA Manifests -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- App icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png">
+
+    <style>
+        :root {
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-cream-100: rgba(255, 255, 253, 1);
+            --color-gray-200: rgba(245, 245, 245, 1);
+            --color-gray-300: rgba(167, 169, 169, 1);
+            --color-slate-500: rgba(98, 108, 113, 1);
+            --color-brown-600: rgba(94, 82, 64, 1);
+            --color-charcoal-700: rgba(31, 33, 33, 1);
+            --color-charcoal-800: rgba(38, 40, 40, 1);
+            --color-slate-900: rgba(19, 52, 59, 1);
+            --color-teal-300: rgba(50, 184, 198, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-teal-700: rgba(26, 104, 115, 1);
+            --color-brown-600-rgb: 94, 82, 64;
+            --color-teal-500-rgb: 33, 128, 141;
+            --color-slate-900-rgb: 19, 52, 59;
+            --color-background: var(--color-cream-50);
+            --color-surface: var(--color-cream-100);
+            --color-text: var(--color-slate-900);
+            --color-text-secondary: var(--color-slate-500);
+            --color-primary: var(--color-teal-500);
+            --color-primary-hover: var(--color-teal-600);
+            --color-primary-active: var(--color-teal-700);
+            --color-border: rgba(var(--color-brown-600-rgb), 0.2);
+            --color-btn-primary-text: var(--color-cream-50);
+            --color-secondary: rgba(var(--color-brown-600-rgb), 0.12);
+            --color-secondary-hover: rgba(var(--color-brown-600-rgb), 0.2);
+            --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --radius-base: 8px;
+            --radius-lg: 12px;
+            --tdr-bg: rgba(33, 128, 80, 0.10);
+            --tdr-accent: #1a7a42;
+            --tdr-text: #15603a;
+            --tdr-border: rgba(33, 128, 80, 0.25);
+            --shear-bg: rgba(180, 50, 50, 0.08);
+            --shear-accent: #a83232;
+            --shear-text: #8b2020;
+            --shear-border: rgba(180, 50, 50, 0.25);
+            --clegg-bg: rgba(100, 60, 180, 0.08);
+            --clegg-accent: #6433b0;
+            --clegg-text: #52289c;
+            --clegg-border: rgba(100, 60, 180, 0.25);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-gray-200-rgb: 245, 245, 245;
+                --color-gray-300-rgb: 167, 169, 169;
+                --color-gray-400-rgb: 119, 124, 124;
+                --color-teal-300-rgb: 50, 184, 198;
+                --color-background: var(--color-charcoal-700);
+                --color-surface: var(--color-charcoal-800);
+                --color-text: var(--color-gray-200);
+                --color-text-secondary: rgba(var(--color-gray-300-rgb), 0.7);
+                --color-primary: var(--color-teal-300);
+                --color-border: rgba(var(--color-gray-400-rgb), 0.3);
+                --color-btn-primary-text: var(--color-slate-900);
+                --color-secondary: rgba(var(--color-gray-400-rgb), 0.15);
+                --color-secondary-hover: rgba(var(--color-gray-400-rgb), 0.25);
+                --tdr-bg: rgba(50, 184, 120, 0.12);
+                --tdr-accent: #4ade80;
+                --tdr-text: #6ee7a0;
+                --tdr-border: rgba(50, 184, 120, 0.3);
+                --shear-bg: rgba(255, 84, 89, 0.12);
+                --shear-accent: #ff5459;
+                --shear-text: #ff7a7e;
+                --shear-border: rgba(255, 84, 89, 0.3);
+                --clegg-bg: rgba(160, 120, 255, 0.12);
+                --clegg-accent: #b48aff;
+                --clegg-text: #c9a8ff;
+                --clegg-border: rgba(160, 120, 255, 0.3);
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.6;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* ===================== LOGIN SCREEN ===================== */
+        #loginScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+            background: var(--color-background);
+        }
+
+        .login-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 16px;
+            padding: 40px 32px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            object-fit: cover;
+        }
+
+        .login-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        .login-subtitle {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        .login-field { width: 100%; margin-bottom: 12px; }
+
+        .login-field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .login-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .login-field input {
+            width: 100%;
+            padding: 12px 38px 12px 14px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background: var(--color-background);
+            color: var(--color-text);
+            font-size: 15px;
+            font-family: var(--font-family-base);
+            transition: border-color 0.2s, outline 0.2s;
+        }
+
+        .login-field input:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .login-clear-btn {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text-secondary);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 14px;
+            line-height: 1;
+            transition: background 0.15s, color 0.15s;
+            flex-shrink: 0;
+        }
+        .login-clear-btn:hover { background: var(--color-secondary); color: var(--color-text); }
+        .login-clear-btn.visible { display: flex; }
+
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            background: var(--color-primary);
+            color: var(--color-btn-primary-text);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s;
+            font-family: var(--font-family-base);
+        }
+        .login-btn:hover { background: var(--color-primary-hover); }
+        .login-btn:active { background: var(--color-primary-active); }
+
+        .login-error {
+            color: #ef4444;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 10px;
+            min-height: 18px;
+            display: none;
+            width: 100%;
+        }
+
+        /* ===================== MAIN APP ===================== */
+        #mainApp { display: none; padding: var(--space-20); }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .app-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-8);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .app-topbar-left {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-12);
+            flex: 1;
+            min-width: 0;
+        }
+
+        .menu-wrap { position: relative; flex-shrink: 0; padding-top: 4px; }
+
+        .hamburger-btn {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            width: 44px;
+            height: 44px;
+            padding: 10px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            background: var(--color-surface);
+            cursor: pointer;
+            font-family: var(--font-family-base);
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .hamburger-btn:hover { background: var(--color-secondary); }
+        .hamburger-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+        .hamburger-btn span {
+            display: block;
+            height: 2px;
+            background: var(--color-text);
+            border-radius: 1px;
+        }
+
+        .nav-dropdown {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            min-width: 180px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            padding: 6px;
+            z-index: 50;
+        }
+        .nav-dropdown[hidden] { display: none !important; }
+        .nav-dropdown button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--color-text);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font-family-base);
+        }
+        .nav-dropdown button:hover { background: var(--color-secondary); }
+
+        .app-title-block { min-width: 0; }
+        .app-topbar-left h1 { font-size: 28px; margin-bottom: var(--space-8); color: var(--color-text); }
+        .subtitle { color: var(--color-text-secondary); margin-bottom: var(--space-16); font-size: 14px; }
+
+        .role-pill {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: var(--color-secondary);
+            color: var(--color-text-secondary);
+        }
+        .role-pill.admin { background: rgba(var(--color-teal-500-rgb), 0.2); color: var(--color-primary); }
+        .role-pill.viewer { background: rgba(120, 120, 120, 0.15); }
+
+        #adminScreen { display: none; }
+        #adminScreen.active { display: block; }
+        #mainWorkspace.hidden { display: none; }
+
+        .admin-back-row {
+            margin-bottom: var(--space-16);
+        }
+        .admin-back-btn {
+            padding: 8px 16px;
+            background: var(--color-secondary);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font-family-base);
+        }
+        .admin-back-btn:hover { background: var(--color-secondary-hover); }
+
+        .admin-page-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: var(--space-8);
+        }
+        .admin-note {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-20);
+            max-width: 720px;
+            line-height: 1.5;
+        }
+
+        .admin-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--space-16);
+            margin-bottom: var(--space-16);
+        }
+        .admin-form-grid .meta-field { min-width: 0; }
+
+        .member-table-wrap { overflow-x: auto; margin-top: var(--space-20); }
+        .member-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .member-table th, .member-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .member-table th {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--color-text-secondary);
+            background: var(--color-secondary);
+        }
+
+        .admin-msg {
+            font-size: 13px;
+            margin-top: var(--space-8);
+            min-height: 20px;
+        }
+        .admin-msg.error { color: #ef4444; }
+        .admin-msg.ok { color: var(--color-primary); }
+
+        input:disabled, select:disabled, button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            color: var(--color-text-secondary);
+        }
+        .user-badge strong { color: var(--color-text); }
+
+        .logout-btn {
+            padding: 6px 14px;
+            background: var(--color-secondary);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font-family-base);
+            transition: background 0.15s;
+        }
+        .logout-btn:hover { background: var(--color-secondary-hover); }
+
+        /* ===================== TOP-LEVEL TAB BAR ===================== */
+        .main-tab-bar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: var(--space-20);
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 6px;
+        }
+
+        .main-tab {
+            flex: 1;
+            padding: 10px 20px;
+            border-radius: var(--radius-base);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--color-text-secondary);
+            font-family: var(--font-family-base);
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .main-tab.active {
+            background: var(--color-primary);
+            color: var(--color-btn-primary-text);
+            box-shadow: 0 2px 8px rgba(33,128,141,0.25);
+        }
+
+        .main-tab:not(.active):hover {
+            background: var(--color-secondary);
+            color: var(--color-text);
+        }
+
+        /* Tab panels */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        .section {
+            background-color: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-20);
+            margin-bottom: var(--space-20);
+            border: 1px solid var(--color-border);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-16);
+        }
+
+        .section-title { font-size: 18px; font-weight: 600; color: var(--color-text); }
+
+        .entered-by-wrapper { max-width: 240px; margin-bottom: var(--space-16); }
+        .entered-by-wrapper label {
+            font-size: 13px; color: var(--color-text-secondary);
+            font-weight: 500; display: block; margin-bottom: 4px;
+        }
+        .entered-by-wrapper input {
+            width: 100%; padding: 8px 12px;
+            border: 1px solid var(--color-border); border-radius: 6px;
+            background-color: var(--color-background); color: var(--color-text); font-size: 14px;
+        }
+        .entered-by-wrapper input:focus { outline: 2px solid var(--color-primary); border-color: var(--color-primary); }
+
+        .meta-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-bottom: var(--space-16);
+        }
+
+        .meta-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 130px;
+        }
+
+        .meta-field label {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+
+        .meta-field input,
+        .meta-field select {
+            padding: 8px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: var(--color-background);
+            color: var(--color-text);
+            font-size: 14px;
+            width: 100%;
+            font-family: var(--font-family-base);
+        }
+
+        .meta-field input:focus,
+        .meta-field select:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .zone-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--space-16);
+            margin-bottom: var(--space-20);
+        }
+
+        .zone-card {
+            background-color: var(--color-background);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            padding: var(--space-16);
+        }
+
+        .zone-name {
+            font-weight: 600; margin-bottom: var(--space-12);
+            color: var(--color-text); font-size: 16px; text-align: center;
+            padding-bottom: var(--space-8); border-bottom: 1px solid var(--color-border);
+        }
+
+        .reading-type-section {
+            border-radius: var(--radius-base); padding: var(--space-12);
+            margin-top: var(--space-12); border: 1px solid transparent;
+        }
+        .reading-type-section.tdr { background: var(--tdr-bg); border-color: var(--tdr-border); }
+        .reading-type-section.shear { background: var(--shear-bg); border-color: var(--shear-border); }
+        .reading-type-section.clegg { background: var(--clegg-bg); border-color: var(--clegg-border); }
+
+        .reading-type-label {
+            font-size: 13px; font-weight: 700; text-align: center;
+            margin-bottom: var(--space-8); padding: 3px 10px;
+            border-radius: 6px; display: block; letter-spacing: 0.04em;
+        }
+        .reading-type-label.tdr { color: var(--tdr-text); }
+        .reading-type-label.shear { color: var(--shear-text); }
+        .reading-type-label.clegg { color: var(--clegg-text); }
+
+        .reading-inputs {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-8); margin-bottom: var(--space-8);
+        }
+
+        .reading-input { display: flex; flex-direction: column; gap: 4px; }
+        .reading-input label { font-size: 11px; color: var(--color-text-secondary); font-weight: 500; }
+        .reading-input input {
+            width: 100%; padding: 6px 8px;
+            border: 1px solid var(--color-border); border-radius: 6px;
+            background-color: var(--color-surface); color: var(--color-text); font-size: 14px;
+        }
+        .reading-input input:focus { outline: 2px solid var(--color-primary); border-color: var(--color-primary); }
+
+        .zone-average {
+            padding: var(--space-8) var(--space-12);
+            border-radius: var(--radius-base); text-align: center;
+        }
+        .zone-average.tdr { background-color: var(--tdr-bg); }
+        .zone-average.shear { background-color: var(--shear-bg); }
+        .zone-average.clegg { background-color: var(--clegg-bg); }
+
+        .zone-average-label { font-size: 11px; font-weight: 500; margin-bottom: 2px; }
+        .zone-average-label.tdr { color: var(--tdr-text); }
+        .zone-average-label.shear { color: var(--shear-text); }
+        .zone-average-label.clegg { color: var(--clegg-text); }
+
+        .zone-average-value { font-size: 22px; font-weight: 700; }
+        .zone-average-value.tdr { color: var(--tdr-accent); }
+        .zone-average-value.shear { color: var(--shear-accent); }
+        .zone-average-value.clegg { color: var(--clegg-accent); }
+
+        .button {
+            padding: 12px 24px; border: none; border-radius: var(--radius-base);
+            font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            font-family: var(--font-family-base);
+        }
+        .button-primary { background-color: var(--color-primary); color: var(--color-btn-primary-text); }
+        .button-primary:hover { background-color: var(--color-primary-hover); }
+        .button-primary:active { background-color: var(--color-primary-active); }
+        .button-secondary { background-color: var(--color-secondary); color: var(--color-text); }
+        .button-secondary:hover { background-color: var(--color-secondary-hover); }
+
+        .button-group { display: flex; gap: var(--space-12); justify-content: flex-end; flex-wrap: wrap; }
+
+        .draft-notice {
+            display: none; margin-top: var(--space-12); padding: var(--space-12);
+            background: rgba(230,138,60,0.12); border: 1px solid rgba(230,138,60,0.3);
+            border-radius: var(--radius-base); font-size: 13px; color: var(--color-text);
+            align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .draft-notice.show { display: flex; }
+        .draft-notice-btn {
+            padding: 4px 12px; border-radius: 4px; font-size: 12px;
+            font-weight: 600; cursor: pointer; border: none; font-family: var(--font-family-base);
+        }
+        .draft-notice-btn.resume { background: var(--color-primary); color: var(--color-btn-primary-text); }
+        .draft-notice-btn.discard { background: var(--color-secondary); color: var(--color-text); border: 1px solid var(--color-border); }
+
+        .date-filter {
+            background: var(--color-surface); border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border); padding: var(--space-16) var(--space-20);
+            margin-top: var(--space-24); margin-bottom: 4px;
+        }
+        .date-filter h3 { font-size: 16px; font-weight: 600; margin-bottom: var(--space-12); color: var(--color-text); }
+        .date-filter-row { display: flex; align-items: flex-end; gap: var(--space-12); flex-wrap: wrap; }
+        .date-filter-field { display: flex; flex-direction: column; gap: 4px; }
+        .date-filter-field label { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); }
+        .date-filter-field input[type="date"] {
+            padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 6px;
+            background: var(--color-background); color: var(--color-text);
+            font-size: 14px; font-family: var(--font-family-base);
+        }
+        .date-filter-field input[type="date"]:focus { outline: 2px solid var(--color-primary); border-color: var(--color-primary); }
+        .filter-btn {
+            padding: 8px 20px; border: none; border-radius: 6px;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+            font-family: var(--font-family-base);
+        }
+        .filter-btn-primary { background: var(--color-primary); color: var(--color-btn-primary-text); }
+        .filter-btn-primary:hover { background: var(--color-primary-hover); }
+        .filter-btn-secondary { background: var(--color-secondary); color: var(--color-text); }
+        .filter-btn-secondary:hover { background: var(--color-secondary-hover); }
+        .filter-info { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-8); }
+
+        .report-section {
+            margin-top: var(--space-24); background-color: var(--color-surface);
+            border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden;
+        }
+        .report-header {
+            padding: var(--space-12) var(--space-16); font-size: 16px; font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .report-header.tdr { background: var(--tdr-bg); color: var(--tdr-text); border-bottom: 1px solid var(--tdr-border); }
+        .report-header.shear { background: var(--shear-bg); color: var(--shear-text); border-bottom: 1px solid var(--shear-border); }
+        .report-header.clegg { background: var(--clegg-bg); color: var(--clegg-text); border-bottom: 1px solid var(--clegg-border); }
+        .report-body { overflow-x: auto; }
+        .report-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .report-table th, .report-table td {
+            padding: 8px 12px; text-align: center; border-bottom: 1px solid var(--color-border);
+        }
+        .report-table th {
+            background: var(--color-secondary); color: var(--color-text-secondary);
+            font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;
+        }
+        .report-table td:first-child { text-align: left; font-weight: 500; }
+        .report-table tbody tr:hover { background: var(--color-secondary); }
+        .report-table .avg-cell.tdr { color: var(--tdr-accent); font-weight: 700; }
+        .report-table .avg-cell.shear { color: var(--shear-accent); font-weight: 700; }
+        .report-table .avg-cell.clegg { color: var(--clegg-accent); font-weight: 700; }
+        .report-empty { padding: var(--space-24); text-align: center; color: var(--color-text-secondary); font-size: 13px; }
+
+        .chart-container {
+            margin-top: var(--space-24); padding: var(--space-20);
+            background-color: var(--color-surface); border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+        }
+        .chart-title { font-size: 18px; font-weight: 600; margin-bottom: var(--space-16); color: var(--color-text); }
+        .chart-tab-bar { display: flex; gap: var(--space-8); margin-bottom: var(--space-16); }
+        .chart-tab {
+            padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600;
+            cursor: pointer; border: 1px solid var(--color-border);
+            background: var(--color-background); color: var(--color-text-secondary); transition: all 0.15s;
+        }
+        .chart-tab.active { background: var(--color-primary); color: var(--color-btn-primary-text); border-color: var(--color-primary); }
+        .chart { width: 100%; height: 400px; position: relative; }
+        .chart-canvas {
+            width: 100%; height: 350px; position: relative;
+            border: 1px solid var(--color-border); border-radius: var(--radius-base);
+            background-color: var(--color-background);
+        }
+        .chart-svg { width: 100%; height: 100%; }
+        .chart-line { fill: none; stroke-width: 2.5; transition: stroke-width 0.2s; }
+        .chart-line:hover { stroke-width: 3.5; }
+        .chart-point { transition: r 0.2s; }
+        .chart-point:hover { r: 6; }
+        .chart-legend { display: flex; flex-wrap: wrap; gap: var(--space-12); justify-content: center; margin-top: var(--space-16); }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-text); }
+        .legend-color { width: 20px; height: 3px; border-radius: 2px; }
+        .chart-tooltip {
+            position: absolute; background-color: var(--color-surface);
+            border: 1px solid var(--color-border); border-radius: var(--radius-base);
+            padding: var(--space-8) var(--space-12); font-size: 12px;
+            pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .chart-tooltip.show { opacity: 1; }
+
+        .toast {
+            position: fixed; right: 24px;
+            background-color: var(--color-primary); color: var(--color-btn-primary-text);
+            padding: var(--space-16) var(--space-20); border-radius: var(--radius-base);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0; transform: translateY(20px); transition: all 0.3s;
+            pointer-events: none; z-index: 100; font-family: var(--font-family-base);
+            bottom: calc(24px + env(safe-area-inset-bottom));
+        }
+        .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        @media (max-width: 768px) {
+            .zone-grid { grid-template-columns: 1fr; }
+            .reading-inputs { grid-template-columns: repeat(2, 1fr); }
+            .chart { height: 350px; }
+            .app-topbar { flex-direction: column; }
+            .app-topbar-left { width: 100%; }
+            .main-tab { font-size: 13px; padding: 8px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===================== LOGIN SCREEN ===================== -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <img class="login-logo"
+                 src="https://raw.githubusercontent.com/ZACHARY23WHITE/fieldtracker/main/greg3.png"
+                 alt="GroundsCrew Logo">
+            <div class="login-title">GroundsCrew</div>
+            <div class="login-subtitle">Field Moisture &amp; Shear Tracker</div>
+
+            <div class="login-field">
+                <label for="loginEmail">Email</label>
+                <div class="login-input-wrapper">
+                    <input type="email" id="loginEmail" placeholder="you@team.com" autocomplete="email">
+                    <button class="login-clear-btn" id="clearEmailBtn" tabindex="-1" aria-label="Clear email">&times;</button>
+                </div>
+            </div>
+            <div class="login-field">
+                <label for="loginPassword">Password</label>
+                <div class="login-input-wrapper">
+                    <input type="password" id="loginPassword" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" autocomplete="current-password">
+                    <button class="login-clear-btn" id="clearPasswordBtn" tabindex="-1" aria-label="Clear password">&times;</button>
+                </div>
+            </div>
+
+            <button class="login-btn" id="loginBtn">Login</button>
+            <div class="login-error" id="loginError"></div>
+        </div>
+    </div>
+
+    <!-- ===================== MAIN APP ===================== -->
+    <div id="mainApp">
+        <div class="container">
+
+            <div class="app-topbar">
+                <div class="app-topbar-left">
+                    <div class="menu-wrap">
+                        <button type="button" class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false" aria-controls="navDropdown">
+                            <span></span><span></span><span></span>
+                        </button>
+                        <div class="nav-dropdown" id="navDropdown" hidden>
+                            <button type="button" id="menuItemAdmin">Admin</button>
+                        </div>
+                    </div>
+                    <div class="app-title-block">
+                        <h1>&#9918; Baseball Field Tracker</h1>
+                        <p class="subtitle">Track TDR, Shear, and Clegg readings across field zones</p>
+                    </div>
+                </div>
+                <div class="user-badge">
+                    <span class="role-pill" id="userRolePill" hidden></span>
+                    <span>Logged in as <strong id="userEmailDisplay"></strong></span>
+                    <button class="logout-btn" id="logoutBtn">Log Out</button>
+                </div>
+            </div>
+
+            <div id="mainWorkspace">
+            <!-- ===== TOP-LEVEL TAB BAR ===== -->
+            <div class="main-tab-bar">
+                <button class="main-tab active" id="tabMoisture">&#128167; Moisture Readings</button>
+                <button class="main-tab" id="tabClegg">&#128296; Clegg</button>
+            </div>
+
+            <!-- ===================================================== -->
+            <!-- MOISTURE TAB PANEL                                     -->
+            <!-- ===================================================== -->
+            <div class="tab-panel active" id="panelMoisture">
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Moisture Readings</h2>
+                    </div>
+
+                    <div class="meta-row">
+                        <div class="meta-field" style="min-width:200px;">
+                            <label for="enteredBy">Entered by</label>
+                            <input type="text" id="enteredBy" placeholder="First name">
+                        </div>
+                        <div class="meta-field">
+                            <label for="tempHigh">Temp High (&deg;F)</label>
+                            <input type="number" id="tempHigh" placeholder="75" inputmode="decimal" pattern="[0-9]*\.?[0-9]*">
+                        </div>
+                        <div class="meta-field">
+                            <label for="tempLow">Temp Low (&deg;F)</label>
+                            <input type="number" id="tempLow" placeholder="55" inputmode="decimal" pattern="[0-9]*\.?[0-9]*">
+                        </div>
+                        <div class="meta-field" style="min-width:150px;">
+                            <label for="weatherCondition">Weather Condition</label>
+                            <select id="weatherCondition">
+                                <option value="">Select...</option>
+                                <option value="sunny">Sunny</option>
+                                <option value="cloudy">Cloudy</option>
+                                <option value="rainy">Rainy</option>
+                            </select>
+                        </div>
+                        <div class="meta-field">
+                            <label for="roofStatus">Roof Status</label>
+                            <select id="roofStatus">
+                                <option value="">Select...</option>
+                                <option value="Open">Open</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="zone-grid" id="zoneGrid"></div>
+
+                    <div class="button-group">
+                        <button class="button button-secondary" id="clearBtn">Clear All</button>
+                        <button class="button button-secondary" id="saveDraftBtn">&#128190; Save Draft</button>
+                        <button class="button button-secondary" id="exportBtn">Export CSV</button>
+                        <button class="button button-secondary" id="importBtn">Import Data</button>
+                        <button class="button button-primary" id="submitBtn">Submit Readings</button>
+                    </div>
+                    <input type="file" id="importFile" accept=".json,.csv" style="display: none;">
+
+                    <div class="draft-notice" id="draftNotice">
+                        &#128221; <strong>You have a saved draft.</strong>
+                        <button class="draft-notice-btn resume" id="loadDraftBtn">Resume Draft</button>
+                        <button class="draft-notice-btn discard" id="discardDraftBtn">Discard</button>
+                    </div>
+                </div>
+
+                <!-- Moisture Date Filter -->
+                <div class="date-filter">
+                    <h3>&#128197; Report Date Range</h3>
+                    <div class="date-filter-row">
+                        <div class="date-filter-field">
+                            <label for="filterStart">Start Date</label>
+                            <input type="date" id="filterStart">
+                        </div>
+                        <div class="date-filter-field">
+                            <label for="filterEnd">End Date</label>
+                            <input type="date" id="filterEnd">
+                        </div>
+                        <button class="filter-btn filter-btn-primary" id="applyFilterBtn">Apply Filter</button>
+                        <button class="filter-btn filter-btn-secondary" id="resetFilterBtn">Reset (Last 7 Days)</button>
+                    </div>
+                    <div class="filter-info" id="filterInfo">Showing last 7 days</div>
+                </div>
+
+                <!-- TDR Report -->
+                <div class="report-section">
+                    <div class="report-header tdr">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                        TDR Report
+                    </div>
+                    <div class="report-body">
+                        <div class="report-empty" id="tdrEmpty">No TDR readings submitted yet.</div>
+                        <table class="report-table" id="tdrReportTable" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">Date</th>
+                                    <th style="text-align:left;">By</th>
+                                    <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
+                                    <th>Left Field</th><th>Center Field</th><th>Right Field</th>
+                                    <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tdrReportBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Shear Report -->
+                <div class="report-section">
+                    <div class="report-header shear">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        Shear Report
+                    </div>
+                    <div class="report-body">
+                        <div class="report-empty" id="shearEmpty">No Shear readings submitted yet.</div>
+                        <table class="report-table" id="shearReportTable" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">Date</th>
+                                    <th style="text-align:left;">By</th>
+                                    <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
+                                    <th>Left Field</th><th>Center Field</th><th>Right Field</th>
+                                    <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shearReportBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Moisture Chart -->
+                <div class="chart-container">
+                    <h2 class="chart-title">Moisture Trends Over Time</h2>
+                    <div class="chart-tab-bar">
+                        <button class="chart-tab active" data-chart-type="tdr" id="chartTabTdr">TDR</button>
+                        <button class="chart-tab" data-chart-type="shear" id="chartTabShear">Shear</button>
+                    </div>
+                    <div class="chart">
+                        <div class="chart-canvas" id="chartCanvas">
+                            <svg class="chart-svg" id="chartSvg"></svg>
+                            <div class="chart-tooltip" id="chartTooltip"></div>
+                        </div>
+                        <div class="chart-legend" id="chartLegend"></div>
+                    </div>
+                </div>
+
+            </div><!-- /panelMoisture -->
+
+            <!-- ===================================================== -->
+            <!-- CLEGG TAB PANEL                                        -->
+            <!-- ===================================================== -->
+            <div class="tab-panel" id="panelClegg">
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Clegg Readings</h2>
+                    </div>
+
+                    <div class="meta-row">
+                        <div class="meta-field" style="min-width:200px;">
+                            <label for="cleggEnteredBy">Entered by</label>
+                            <input type="text" id="cleggEnteredBy" placeholder="First name">
+                        </div>
+                        <div class="meta-field">
+                            <label for="cleggTempHigh">Temp High (&deg;F)</label>
+                            <input type="number" id="cleggTempHigh" placeholder="75" inputmode="decimal" pattern="[0-9]*\.?[0-9]*">
+                        </div>
+                        <div class="meta-field">
+                            <label for="cleggTempLow">Temp Low (&deg;F)</label>
+                            <input type="number" id="cleggTempLow" placeholder="55" inputmode="decimal" pattern="[0-9]*\.?[0-9]*">
+                        </div>
+                        <div class="meta-field" style="min-width:150px;">
+                            <label for="cleggWeather">Weather Condition</label>
+                            <select id="cleggWeather">
+                                <option value="">Select...</option>
+                                <option value="sunny">Sunny</option>
+                                <option value="cloudy">Cloudy</option>
+                                <option value="rainy">Rainy</option>
+                            </select>
+                        </div>
+                        <div class="meta-field">
+                            <label for="cleggRoofStatus">Roof Status</label>
+                            <select id="cleggRoofStatus">
+                                <option value="">Select...</option>
+                                <option value="Open">Open</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="zone-grid" id="cleggZoneGrid"></div>
+
+                    <div class="button-group">
+                        <button class="button button-secondary" id="cleggClearBtn">Clear All</button>
+                        <button class="button button-secondary" id="cleggSaveDraftBtn">&#128190; Save Draft</button>
+                        <button class="button button-secondary" id="cleggExportBtn">Export CSV</button>
+                        <button class="button button-primary" id="cleggSubmitBtn">Submit Clegg Readings</button>
+                    </div>
+
+                    <div class="draft-notice" id="cleggDraftNotice">
+                        &#128221; <strong>You have a saved Clegg draft.</strong>
+                        <button class="draft-notice-btn resume" id="cleggLoadDraftBtn">Resume Draft</button>
+                        <button class="draft-notice-btn discard" id="cleggDiscardDraftBtn">Discard</button>
+                    </div>
+                </div>
+
+                <!-- Clegg Date Filter -->
+                <div class="date-filter">
+                    <h3>&#128197; Clegg Report Date Range</h3>
+                    <div class="date-filter-row">
+                        <div class="date-filter-field">
+                            <label for="cleggFilterStart">Start Date</label>
+                            <input type="date" id="cleggFilterStart">
+                        </div>
+                        <div class="date-filter-field">
+                            <label for="cleggFilterEnd">End Date</label>
+                            <input type="date" id="cleggFilterEnd">
+                        </div>
+                        <button class="filter-btn filter-btn-primary" id="cleggApplyFilterBtn">Apply Filter</button>
+                        <button class="filter-btn filter-btn-secondary" id="cleggResetFilterBtn">Reset (Last 7 Days)</button>
+                    </div>
+                    <div class="filter-info" id="cleggFilterInfo">Showing last 7 days</div>
+                </div>
+
+                <!-- Clegg Report -->
+                <div class="report-section">
+                    <div class="report-header clegg">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                        Clegg Report
+                    </div>
+                    <div class="report-body">
+                        <div class="report-empty" id="cleggEmpty">No Clegg readings submitted yet.</div>
+                        <table class="report-table" id="cleggReportTable" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">Date</th>
+                                    <th style="text-align:left;">By</th>
+                                    <th>High &deg;F</th><th>Low &deg;F</th><th>Weather</th><th>Roof Status</th>
+                                    <th>Left Field</th><th>Center Field</th><th>Right Field</th>
+                                    <th>1st Base Line</th><th>3rd Base Line</th><th>Infield</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cleggReportBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Clegg Chart -->
+                <div class="chart-container">
+                    <h2 class="chart-title">Clegg Trends Over Time</h2>
+                    <div class="chart">
+                        <div class="chart-canvas" id="cleggChartCanvas">
+                            <svg class="chart-svg" id="cleggChartSvg"></svg>
+                            <div class="chart-tooltip" id="cleggChartTooltip"></div>
+                        </div>
+                        <div class="chart-legend" id="cleggChartLegend"></div>
+                    </div>
+                </div>
+
+            </div><!-- /panelClegg -->
+
+            </div><!-- /mainWorkspace -->
+
+            <!-- ===================== ADMIN (admins only) ===================== -->
+            <div id="adminScreen">
+                <div class="admin-back-row">
+                    <button type="button" class="admin-back-btn" id="adminBackBtn">&larr; Back to tracker</button>
+                </div>
+                <h2 class="admin-page-title">Team admin</h2>
+                <p class="admin-note">Inviting creates a real Firebase login for that email, adds them to your team, and (for new accounts) sends a password setup email. Deploy the <code>inviteTeamMember</code> Cloud Function in this project&rsquo;s <code>functions/</code> folder for this to work. In Firebase Console &rarr; Authentication &rarr; Templates, customize the password reset email if you like.</p>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Add new user</h2>
+                    </div>
+                    <div class="admin-form-grid">
+                        <div class="meta-field">
+                            <label for="adminFirstName">First name</label>
+                            <input type="text" id="adminFirstName" placeholder="First name" autocomplete="given-name">
+                        </div>
+                        <div class="meta-field">
+                            <label for="adminLastName">Last name</label>
+                            <input type="text" id="adminLastName" placeholder="Last name" autocomplete="family-name">
+                        </div>
+                        <div class="meta-field" style="grid-column: span 2; min-width: 220px;">
+                            <label for="adminEmail">Email address</label>
+                            <input type="email" id="adminEmail" placeholder="name@team.com" autocomplete="email">
+                        </div>
+                        <div class="meta-field">
+                            <label for="adminRole">Role</label>
+                            <select id="adminRole">
+                                <option value="viewer">Viewer</option>
+                                <option value="standard" selected>Standard</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="button-group" style="justify-content: flex-start;">
+                        <button type="button" class="button button-primary" id="adminAddUserBtn">Invite user</button>
+                    </div>
+                    <div class="admin-msg" id="adminFormMsg"></div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Team roster</h2>
+                    </div>
+                    <div class="member-table-wrap">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminRosterBody"></tbody>
+                        </table>
+                    </div>
+                    <p class="admin-msg" id="adminRosterEmpty" style="color: var(--color-text-secondary);">No roster entries yet.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import {
+            getAuth,
+            signInWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged,
+            sendPasswordResetEmail
+        } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-functions.js";
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            doc,
+            getDoc,
+            setDoc,
+            deleteDoc,
+            query,
+            orderBy,
+            onSnapshot,
+            getDocs,
+            Timestamp
+        } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/fieldtrackersandbox1/sw.js')
+                    .then(reg => console.log('SW registered:', reg.scope))
+                    .catch(err => console.log('SW registration failed:', err));
+            });
+        }
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyABg24W2TQ1QzgLCFgK1YrGdSW7GCHR65k",
+            authDomain: "fieldtrackersandbox1.firebaseapp.com",
+            projectId: "fieldtrackersandbox1",
+            storageBucket: "fieldtrackersandbox1.firebasestorage.app",
+            messagingSenderId: "1006594230144",
+            appId: "1:1006594230144:web:3aac37eebd047d51b3a365",
+            measurementId: "G-GMXJ2S8RFX"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const functions = getFunctions(app, 'us-central1');
+        const inviteTeamMemberCallable = httpsCallable(functions, 'inviteTeamMember');
+
+        // ================================================================
+        //  LOGIN CLEAR BUTTONS
+        // ================================================================
+        function setupClearButton(inputId, btnId) {
+            const input = document.getElementById(inputId);
+            const btn = document.getElementById(btnId);
+            input.addEventListener('input', () => btn.classList.toggle('visible', input.value.length > 0));
+            btn.addEventListener('mousedown', (e) => { e.preventDefault(); input.value = ''; btn.classList.remove('visible'); input.focus(); });
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); input.value = ''; btn.classList.remove('visible'); input.focus(); });
+        }
+        setupClearButton('loginEmail', 'clearEmailBtn');
+        setupClearButton('loginPassword', 'clearPasswordBtn');
+
+        // ================================================================
+        //  CONFIG
+        // ================================================================
+        const zones = ['Left Field', 'Center Field', 'Right Field', '1st Base Line', '3rd Base Line', 'Infield'];
+        const moistureTypes = ['tdr', 'shear'];
+        const cleggTypes = ['clegg'];
+
+        let moistureHistory = [];
+        let cleggHistory = [];
+        let activeChartType = 'tdr';
+        let moistureFilterStart = null, moistureFilterEnd = null;
+        let cleggFilterStart = null, cleggFilterEnd = null;
+        let currentUser = null, currentTeamId = null, currentUserName = null;
+        let currentUserRole = 'standard';
+        let unsubMoisture = null, unsubClegg = null;
+
+        const VALID_ROLES = ['viewer', 'standard', 'admin'];
+
+        function normalizeEmail(email) {
+            return (email || '').trim().toLowerCase();
+        }
+
+        function memberDirectoryRef(emailKey) {
+            return doc(db, 'teams', currentTeamId, 'memberDirectory', emailKey);
+        }
+
+        function closeNavDropdown() {
+            const dd = document.getElementById('navDropdown');
+            const hb = document.getElementById('hamburgerBtn');
+            dd.hidden = true;
+            hb.setAttribute('aria-expanded', 'false');
+        }
+
+        function closeAdminView() {
+            document.getElementById('adminScreen').classList.remove('active');
+            document.getElementById('mainWorkspace').classList.remove('hidden');
+        }
+
+        function openAdminView() {
+            if (currentUserRole !== 'admin') {
+                showToast('Only administrators can open this screen.');
+                return;
+            }
+            closeNavDropdown();
+            document.getElementById('adminScreen').classList.add('active');
+            document.getElementById('mainWorkspace').classList.add('hidden');
+            loadAdminRoster().catch(err => { console.error(err); showToast('Could not load roster.'); });
+        }
+
+        function applyRolePermissions() {
+            const viewer = currentUserRole === 'viewer';
+
+            document.querySelectorAll('#panelMoisture .reading-type-section.tdr input, #panelMoisture .reading-type-section.shear input').forEach(el => {
+                el.disabled = viewer;
+            });
+            document.querySelectorAll('#panelClegg .reading-type-section.clegg input').forEach(el => {
+                el.disabled = viewer;
+            });
+
+            const moistureActions = ['submitBtn', 'saveDraftBtn', 'clearBtn', 'importBtn'];
+            moistureActions.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = viewer; });
+            const cleggActions = ['cleggSubmitBtn', 'cleggSaveDraftBtn', 'cleggClearBtn'];
+            cleggActions.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = viewer; });
+
+            ['loadDraftBtn', 'discardDraftBtn', 'cleggLoadDraftBtn', 'cleggDiscardDraftBtn'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = viewer;
+            });
+
+            const pill = document.getElementById('userRolePill');
+            if (pill) {
+                pill.hidden = false;
+                pill.textContent = currentUserRole;
+                pill.className = 'role-pill ' + (currentUserRole === 'admin' ? 'admin' : currentUserRole === 'viewer' ? 'viewer' : '');
+            }
+        }
+
+        const MOISTURE_DRAFT_ID = 'current_draft';
+        const CLEGG_DRAFT_ID = 'clegg_draft';
+
+        function moistureCol() { return collection(db, 'teams', currentTeamId, 'moistureReadings'); }
+        function cleggCol() { return collection(db, 'teams', currentTeamId, 'cleggReadings'); }
+        function moistureDraftRef() { return doc(db, 'teams', currentTeamId, 'drafts', MOISTURE_DRAFT_ID); }
+        function cleggDraftRef() { return doc(db, 'teams', currentTeamId, 'drafts', CLEGG_DRAFT_ID); }
+
+        // ================================================================
+        //  AUTH
+        // ================================================================
+        async function loadAdminRoster() {
+            if (!currentTeamId) return;
+            const tbody = document.getElementById('adminRosterBody');
+            const emptyEl = document.getElementById('adminRosterEmpty');
+            tbody.innerHTML = '';
+            const colRef = collection(db, 'teams', currentTeamId, 'memberDirectory');
+            const snap = await getDocs(colRef);
+            const rows = [];
+            snap.forEach(d => {
+                const x = d.data();
+                rows.push({
+                    firstName: x.firstName || '',
+                    lastName: x.lastName || '',
+                    email: x.email || d.id,
+                    role: VALID_ROLES.includes(x.role) ? x.role : 'standard'
+                });
+            });
+            rows.sort((a, b) => (a.lastName + a.firstName).localeCompare(b.lastName + b.firstName));
+            rows.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + e((r.firstName + ' ' + r.lastName).trim() || '—') + '</td><td>' + e(r.email) + '</td><td>' + e(r.role) + '</td>';
+                tbody.appendChild(tr);
+            });
+            const has = rows.length > 0;
+            emptyEl.style.display = has ? 'none' : 'block';
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                let teamId = null, displayName = user.email, roleFromDoc = null;
+                try {
+                    const snap = await getDoc(doc(db, 'users', user.uid));
+                    if (snap.exists()) {
+                        const d = snap.data();
+                        teamId = d.teamId || null;
+                        displayName = d.name || user.email;
+                        roleFromDoc = d.role || null;
+                    }
+                } catch (e) { console.error(e); }
+                if (!teamId) { showLoginError('No team assigned. Contact your admin.'); await signOut(auth); return; }
+                currentTeamId = teamId; currentUserName = displayName;
+                let roleFromRoster = null;
+                try {
+                    const dirSnap = await getDoc(memberDirectoryRef(normalizeEmail(user.email)));
+                    if (dirSnap.exists()) {
+                        const dr = dirSnap.data().role;
+                        if (VALID_ROLES.includes(dr)) roleFromRoster = dr;
+                    }
+                } catch (e2) { console.error(e2); }
+                currentUserRole = VALID_ROLES.includes(roleFromDoc) ? roleFromDoc
+                    : (roleFromRoster != null ? roleFromRoster : 'standard');
+                closeAdminView();
+                closeNavDropdown();
+                document.getElementById('userEmailDisplay').textContent = displayName + ' — ' + teamId;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                initZoneGrid('zoneGrid', 'moisture', moistureTypes);
+                initZoneGrid('cleggZoneGrid', 'clegg', cleggTypes);
+                applyRolePermissions();
+                listenForMoistureReadings();
+                listenForCleggReadings();
+                checkForDraft('moisture');
+                checkForDraft('clegg');
+            } else {
+                currentUser = null; currentTeamId = null; currentUserName = null;
+                currentUserRole = 'standard';
+                closeAdminView();
+                closeNavDropdown();
+                const pill = document.getElementById('userRolePill');
+                if (pill) { pill.hidden = true; pill.textContent = ''; pill.className = 'role-pill'; }
+                if (unsubMoisture) { unsubMoisture(); unsubMoisture = null; }
+                if (unsubClegg) { unsubClegg(); unsubClegg = null; }
+                moistureHistory = []; cleggHistory = [];
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'none';
+            }
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errEl = document.getElementById('loginError');
+            errEl.style.display = 'none';
+            if (!email || !password) { errEl.textContent = 'Please enter your email and password.'; errEl.style.display = 'block'; return; }
+            try { await signInWithEmailAndPassword(auth, email, password); }
+            catch (err) { errEl.textContent = 'Invalid email or password.'; errEl.style.display = 'block'; }
+        });
+        document.getElementById('loginPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('loginBtn').click(); });
+        document.getElementById('logoutBtn').addEventListener('click', async () => { await signOut(auth); showToast('Logged out.'); });
+        function showLoginError(msg) { const e = document.getElementById('loginError'); e.textContent = msg; e.style.display = 'block'; }
+
+        document.getElementById('hamburgerBtn').addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            const dd = document.getElementById('navDropdown');
+            const hb = document.getElementById('hamburgerBtn');
+            const willOpen = dd.hidden;
+            dd.hidden = !willOpen;
+            hb.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        });
+        document.getElementById('navDropdown').addEventListener('click', (ev) => ev.stopPropagation());
+        document.getElementById('menuItemAdmin').addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            openAdminView();
+        });
+        document.getElementById('adminBackBtn').addEventListener('click', () => {
+            closeAdminView();
+            closeNavDropdown();
+        });
+        document.addEventListener('click', () => closeNavDropdown());
+
+        document.getElementById('adminAddUserBtn').addEventListener('click', async () => {
+            if (currentUserRole !== 'admin') { showToast('Only administrators can manage the roster.'); return; }
+            if (!currentUser || !currentTeamId) return;
+            const fn = document.getElementById('adminFirstName').value.trim();
+            const ln = document.getElementById('adminLastName').value.trim();
+            const em = document.getElementById('adminEmail').value.trim();
+            const role = document.getElementById('adminRole').value;
+            const msgEl = document.getElementById('adminFormMsg');
+            const btn = document.getElementById('adminAddUserBtn');
+            msgEl.textContent = '';
+            msgEl.className = 'admin-msg';
+            if (!fn || !ln || !em) {
+                msgEl.textContent = 'First name, last name, and email are required.';
+                msgEl.classList.add('error');
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+                msgEl.textContent = 'Enter a valid email address.';
+                msgEl.classList.add('error');
+                return;
+            }
+            btn.disabled = true;
+            try {
+                const { data } = await inviteTeamMemberCallable({ email: em, firstName: fn, lastName: ln, role });
+                if (data.isNewUser) {
+                    await sendPasswordResetEmail(auth, data.email);
+                    msgEl.textContent = 'Account created. They will get an email to set their password, then they can sign in.';
+                } else {
+                    msgEl.textContent = 'That email already had an account. Their team access and role were updated. They can sign in with their existing password.';
+                }
+                msgEl.classList.add('ok');
+                document.getElementById('adminFirstName').value = '';
+                document.getElementById('adminLastName').value = '';
+                document.getElementById('adminEmail').value = '';
+                document.getElementById('adminRole').value = 'standard';
+                await loadAdminRoster();
+            } catch (err) {
+                console.error(err);
+                const code = err.code || '';
+                const detail = err.message || '';
+                let friendly = 'Invite failed. Deploy Cloud Functions if you have not, then try again.';
+                if (code === 'functions/not-found' || detail.includes('NOT_FOUND')) {
+                    friendly = 'Invite function is not deployed. Run firebase deploy --only functions from this project.';
+                } else if (code === 'functions/permission-denied' || detail.includes('permission-denied')) {
+                    friendly = 'You do not have permission to invite users.';
+                } else if (code === 'functions/failed-precondition' || detail.includes('failed-precondition')) {
+                    friendly = detail.replace(/^.*failed-precondition[.\s]*/i, '').trim() || 'That user cannot be added to this team.';
+                } else if (code === 'functions/invalid-argument' || detail.includes('invalid-argument')) {
+                    friendly = detail.replace(/^.*invalid-argument[.\s]*/i, '').trim() || 'Check the form and try again.';
+                } else if (detail) {
+                    friendly = detail;
+                }
+                msgEl.textContent = friendly;
+                msgEl.classList.add('error');
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // ================================================================
+        //  TOP-LEVEL TABS
+        // ================================================================
+        document.getElementById('tabMoisture').addEventListener('click', () => switchMainTab('moisture'));
+        document.getElementById('tabClegg').addEventListener('click', () => switchMainTab('clegg'));
+
+        function switchMainTab(tab) {
+            document.getElementById('tabMoisture').classList.toggle('active', tab === 'moisture');
+            document.getElementById('tabClegg').classList.toggle('active', tab === 'clegg');
+            document.getElementById('panelMoisture').classList.toggle('active', tab === 'moisture');
+            document.getElementById('panelClegg').classList.toggle('active', tab === 'clegg');
+        }
+
+        // ================================================================
+        //  ZONE GRID BUILDER (shared for both tabs)
+        // ================================================================
+        function initZoneGrid(gridId, prefix, types) {
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '';
+            zones.forEach((zone, zoneIndex) => {
+                const card = document.createElement('div');
+                card.className = 'zone-card';
+                const zoneName = document.createElement('div');
+                zoneName.className = 'zone-name';
+                zoneName.textContent = zone;
+                card.appendChild(zoneName);
+                types.forEach(type => {
+                    const typeSection = document.createElement('div');
+                    typeSection.className = 'reading-type-section ' + type;
+                    const typeLabel = document.createElement('div');
+                    typeLabel.className = 'reading-type-label ' + type;
+                    typeLabel.textContent = type.toUpperCase();
+                    typeSection.appendChild(typeLabel);
+                    const readingInputs = document.createElement('div');
+                    readingInputs.className = 'reading-inputs';
+                    for (let i = 1; i <= 6; i++) {
+                        const inputWrapper = document.createElement('div');
+                        inputWrapper.className = 'reading-input';
+                        const label = document.createElement('label');
+                        label.textContent = 'Zone ' + i;
+                        inputWrapper.appendChild(label);
+                        const input = document.createElement('input');
+                        input.type = 'number'; input.step = '0.1'; input.min = '0'; input.placeholder = '0.0';
+                        input.inputMode = 'decimal'; input.pattern = '[0-9]*\\.?[0-9]*';
+                        input.id = prefix + '-zone-' + zoneIndex + '-' + type + '-' + i;
+                        input.addEventListener('input', () => updateAverage(prefix, zoneIndex, type));
+                        inputWrapper.appendChild(input);
+                        readingInputs.appendChild(inputWrapper);
+                    }
+                    typeSection.appendChild(readingInputs);
+                    const avgDiv = document.createElement('div');
+                    avgDiv.className = 'zone-average ' + type;
+                    avgDiv.innerHTML = '<div class="zone-average-label ' + type + '">' + type.toUpperCase() + ' Average</div><div class="zone-average-value ' + type + '" id="' + prefix + '-avg-' + zoneIndex + '-' + type + '">--</div>';
+                    typeSection.appendChild(avgDiv);
+                    card.appendChild(typeSection);
+                });
+                grid.appendChild(card);
+            });
+        }
+
+        function updateAverage(prefix, zoneIndex, type) {
+            const readings = [];
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById(prefix + '-zone-' + zoneIndex + '-' + type + '-' + i);
+                if (el) { const val = parseFloat(el.value); if (!isNaN(val) && val > 0) readings.push(val); }
+            }
+            const avgEl = document.getElementById(prefix + '-avg-' + zoneIndex + '-' + type);
+            if (avgEl) avgEl.textContent = readings.length > 0 ? (readings.reduce((s,v)=>s+v,0)/readings.length).toFixed(1) : '--';
+        }
+
+        // ================================================================
+        //  MOISTURE SUBMIT
+        // ================================================================
+        async function submitMoistureReadings() {
+            if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
+            if (currentUserRole === 'viewer') { showToast('Viewers cannot submit readings.'); return; }
+            const enteredBy = document.getElementById('enteredBy').value.trim();
+            const tempHigh = parseFloat(document.getElementById('tempHigh').value) || null;
+            const tempLow = parseFloat(document.getElementById('tempLow').value) || null;
+            const weatherCondition = document.getElementById('weatherCondition').value || null;
+            const roofStatus = document.getElementById('roofStatus').value || null;
+            const reading = { timestamp: Timestamp.now(), date: new Date().toLocaleString(), enteredBy: enteredBy || null, tempHigh, tempLow, weatherCondition, roofStatus, zones: [] };
+            let hasData = false;
+            zones.forEach((zone, zi) => {
+                const zoneEntry = { name: zone, tdr: { readings: [], average: null }, shear: { readings: [], average: null } };
+                moistureTypes.forEach(type => {
+                    const vals = [];
+                    for (let i = 1; i <= 6; i++) {
+                        const el = document.getElementById('moisture-zone-' + zi + '-' + type + '-' + i);
+                        if (el) { const val = parseFloat(el.value); if (!isNaN(val) && val > 0) { vals.push(val); hasData = true; } }
+                    }
+                    zoneEntry[type].readings = vals;
+                    if (vals.length > 0) zoneEntry[type].average = vals.reduce((s,v)=>s+v,0)/vals.length;
+                });
+                reading.zones.push(zoneEntry);
+            });
+            if (!hasData) { showToast('Please enter at least one reading.'); return; }
+            try {
+                await addDoc(moistureCol(), reading);
+                showToast('Moisture readings saved!');
+                clearMoistureForm(false);
+                try { await deleteDoc(moistureDraftRef()); } catch(e) {}
+                showDraftNotice('moisture', false);
+            } catch(err) { console.error(err); showToast('Error saving — check console.'); }
+        }
+
+        // ================================================================
+        //  CLEGG SUBMIT
+        // ================================================================
+        async function submitCleggReadings() {
+            if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
+            if (currentUserRole === 'viewer') { showToast('Viewers cannot submit readings.'); return; }
+            const enteredBy = document.getElementById('cleggEnteredBy').value.trim();
+            const tempHigh = parseFloat(document.getElementById('cleggTempHigh').value) || null;
+            const tempLow = parseFloat(document.getElementById('cleggTempLow').value) || null;
+            const weatherCondition = document.getElementById('cleggWeather').value || null;
+            const roofStatus = document.getElementById('cleggRoofStatus').value || null;
+            const reading = { timestamp: Timestamp.now(), date: new Date().toLocaleString(), enteredBy: enteredBy || null, tempHigh, tempLow, weatherCondition, roofStatus, zones: [] };
+            let hasData = false;
+            zones.forEach((zone, zi) => {
+                const zoneEntry = { name: zone, clegg: { readings: [], average: null } };
+                const vals = [];
+                for (let i = 1; i <= 6; i++) {
+                    const el = document.getElementById('clegg-zone-' + zi + '-clegg-' + i);
+                    if (el) { const val = parseFloat(el.value); if (!isNaN(val) && val > 0) { vals.push(val); hasData = true; } }
+                }
+                zoneEntry.clegg.readings = vals;
+                if (vals.length > 0) zoneEntry.clegg.average = vals.reduce((s,v)=>s+v,0)/vals.length;
+                reading.zones.push(zoneEntry);
+            });
+            if (!hasData) { showToast('Please enter at least one Clegg reading.'); return; }
+            try {
+                await addDoc(cleggCol(), reading);
+                showToast('Clegg readings saved!');
+                clearCleggForm(false);
+                try { await deleteDoc(cleggDraftRef()); } catch(e) {}
+                showDraftNotice('clegg', false);
+            } catch(err) { console.error(err); showToast('Error saving — check console.'); }
+        }
+
+        // ================================================================
+        //  DRAFT — MOISTURE
+        // ================================================================
+        async function saveMoistureDraft() {
+            if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
+            if (currentUserRole === 'viewer') { showToast('Viewers cannot save drafts.'); return; }
+            const draft = {
+                enteredBy: document.getElementById('enteredBy').value.trim(),
+                tempHigh: document.getElementById('tempHigh').value.trim(),
+                tempLow: document.getElementById('tempLow').value.trim(),
+                weatherCondition: document.getElementById('weatherCondition').value,
+                roofStatus: document.getElementById('roofStatus').value,
+                savedAt: Timestamp.now(), zones: {}
+            };
+            zones.forEach((zone, zi) => {
+                draft.zones[String(zi)] = {};
+                moistureTypes.forEach(type => {
+                    draft.zones[String(zi)][type] = {};
+                    for (let i = 1; i <= 6; i++) {
+                        const el = document.getElementById('moisture-zone-' + zi + '-' + type + '-' + i);
+                        draft.zones[String(zi)][type][String(i)] = el ? el.value || '' : '';
+                    }
+                });
+            });
+            try { await setDoc(moistureDraftRef(), draft); showDraftNotice('moisture', true); showToast('Draft saved!'); }
+            catch(err) { console.error(err); showToast('Error saving draft.'); }
+        }
+
+        async function loadMoistureDraft() {
+            if (!currentUser || !currentTeamId) return;
+            if (currentUserRole === 'viewer') { showToast('Viewers cannot load drafts.'); return; }
+            try {
+                const snap = await getDoc(moistureDraftRef());
+                if (!snap.exists()) { showToast('No draft found.'); return; }
+                const d = snap.data();
+                document.getElementById('enteredBy').value = d.enteredBy || '';
+                document.getElementById('tempHigh').value = d.tempHigh || '';
+                document.getElementById('tempLow').value = d.tempLow || '';
+                document.getElementById('weatherCondition').value = d.weatherCondition || '';
+                document.getElementById('roofStatus').value = d.roofStatus || '';
+                zones.forEach((zone, zi) => {
+                    moistureTypes.forEach(type => {
+                        for (let i = 1; i <= 6; i++) {
+                            const el = document.getElementById('moisture-zone-' + zi + '-' + type + '-' + i);
+                            if (el) el.value = d.zones?.[String(zi)]?.[type]?.[String(i)] || '';
+                        }
+                        updateAverage('moisture', zi, type);
+                    });
+                });
+                showToast('Moisture draft restored!');
+            } catch(err) { console.error(err); showToast('Error loading draft.'); }
+        }
+
+        async function discardMoistureDraft() {
+            if (!currentUser || !currentTeamId) return;
+            if (currentUserRole === 'viewer') return;
+            try { await deleteDoc(moistureDraftRef()); showDraftNotice('moisture', false); showToast('Draft discarded.'); }
+            catch(e) { showToast('Error discarding draft.'); }
+        }
+
+        // ================================================================
+        //  DRAFT — CLEGG
+        // ================================================================
+        async function saveCleggDraft() {
+            if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
+            if (currentUserRole === 'viewer') { showToast('Viewers cannot save drafts.'); return; }
+            const draft = {
+                enteredBy: document.getElementById('cleggEnteredBy').value.trim(),
+                tempHigh: document.getElementById('cleggTempHigh').value.trim(),
+                tempLow: document.getElementById('cleggTempLow').value.trim(),
+                weatherCondition: document.getElementById('cleggWeather').value,
+                roofStatus: document.getElementById('cleggRoofStatus').value,
+                savedAt: Timestamp.now(), zones: {}
+            };
+            zones.forEach((zone, zi) => {
+                draft.zones[String(zi)] = { clegg: {} };
+                for (let i = 1; i <= 6; i++) {
+                    const el = document.getElementById('clegg-zone-' + zi + '-clegg-' + i);
+                    draft.zones[String(zi)].clegg[String(i)] = el ? el.value || '' : '';
+                }
+            });
+            try { await setDoc(cleggDraftRef(), draft); showDraftNotice('clegg', true); showToast('Clegg draft saved!'); }
+            catch(err) { console.error(err); showToast('Error saving draft.'); }
+        }
+
+        async function loadCleggDraft() {
+            if (!currentUser || !currentTeamId) return;
+            if (currentUserRole === 'viewer') { showToast('Viewers cannot load drafts.'); return; }
+            try {
+                const snap = await getDoc(cleggDraftRef());
+                if (!snap.exists()) { showToast('No Clegg draft found.'); return; }
+                const d = snap.data();
+                document.getElementById('cleggEnteredBy').value = d.enteredBy || '';
+                document.getElementById('cleggTempHigh').value = d.tempHigh || '';
+                document.getElementById('cleggTempLow').value = d.tempLow || '';
+                document.getElementById('cleggWeather').value = d.weatherCondition || '';
+                document.getElementById('cleggRoofStatus').value = d.roofStatus || '';
+                zones.forEach((zone, zi) => {
+                    for (let i = 1; i <= 6; i++) {
+                        const el = document.getElementById('clegg-zone-' + zi + '-clegg-' + i);
+                        if (el) el.value = d.zones?.[String(zi)]?.clegg?.[String(i)] || '';
+                    }
+                    updateAverage('clegg', zi, 'clegg');
+                });
+                showToast('Clegg draft restored!');
+            } catch(err) { console.error(err); showToast('Error loading Clegg draft.'); }
+        }
+
+        async function discardCleggDraft() {
+            if (!currentUser || !currentTeamId) return;
+            if (currentUserRole === 'viewer') return;
+            try { await deleteDoc(cleggDraftRef()); showDraftNotice('clegg', false); showToast('Clegg draft discarded.'); }
+            catch(e) { showToast('Error discarding draft.'); }
+        }
+
+        async function checkForDraft(which) {
+            if (!currentUser || !currentTeamId) return;
+            try {
+                const ref = which === 'clegg' ? cleggDraftRef() : moistureDraftRef();
+                const snap = await getDoc(ref);
+                if (snap.exists() && snap.data().zones) showDraftNotice(which, true);
+            } catch(e) { console.error(e); }
+        }
+
+        function showDraftNotice(which, show) {
+            const id = which === 'clegg' ? 'cleggDraftNotice' : 'draftNotice';
+            const el = document.getElementById(id);
+            if (show) el.classList.add('show'); else el.classList.remove('show');
+        }
+
+        // ================================================================
+        //  CLEAR FORMS
+        // ================================================================
+        function clearMoistureForm(notify) {
+            zones.forEach((zone, zi) => {
+                moistureTypes.forEach(type => {
+                    for (let i = 1; i <= 6; i++) { const el = document.getElementById('moisture-zone-' + zi + '-' + type + '-' + i); if (el) el.value = ''; }
+                    updateAverage('moisture', zi, type);
+                });
+            });
+            ['enteredBy','tempHigh','tempLow'].forEach(id => { document.getElementById(id).value = ''; });
+            document.getElementById('weatherCondition').value = '';
+            document.getElementById('roofStatus').value = '';
+            if (notify !== false) showToast('Form cleared.');
+        }
+
+        function clearCleggForm(notify) {
+            zones.forEach((zone, zi) => {
+                for (let i = 1; i <= 6; i++) { const el = document.getElementById('clegg-zone-' + zi + '-clegg-' + i); if (el) el.value = ''; }
+                updateAverage('clegg', zi, 'clegg');
+            });
+            ['cleggEnteredBy','cleggTempHigh','cleggTempLow'].forEach(id => { document.getElementById(id).value = ''; });
+            document.getElementById('cleggWeather').value = '';
+            document.getElementById('cleggRoofStatus').value = '';
+            if (notify !== false) showToast('Clegg form cleared.');
+        }
+
+        // ================================================================
+        //  FIRESTORE LISTENERS
+        // ================================================================
+        function listenForMoistureReadings() {
+            if (unsubMoisture) unsubMoisture();
+            const q = query(moistureCol(), orderBy('timestamp', 'asc'));
+            unsubMoisture = onSnapshot(q, (snap) => {
+                moistureHistory = [];
+                snap.forEach(ds => {
+                    const d = ds.data();
+                    moistureHistory.push({ id: ds.id, date: d.date || d.timestamp?.toDate().toLocaleString() || 'Unknown', enteredBy: d.enteredBy || null, tempHigh: d.tempHigh ?? null, tempLow: d.tempLow ?? null, weatherCondition: d.weatherCondition || null, roofStatus: d.roofStatus || null, zones: d.zones || [] });
+                });
+                moistureHistory.reverse();
+                updateMoistureReports(); updateChart();
+            }, (err) => { console.error(err); showToast('Error loading moisture data.'); });
+        }
+
+        function listenForCleggReadings() {
+            if (unsubClegg) unsubClegg();
+            const q = query(cleggCol(), orderBy('timestamp', 'asc'));
+            unsubClegg = onSnapshot(q, (snap) => {
+                cleggHistory = [];
+                snap.forEach(ds => {
+                    const d = ds.data();
+                    cleggHistory.push({ id: ds.id, date: d.date || d.timestamp?.toDate().toLocaleString() || 'Unknown', enteredBy: d.enteredBy || null, tempHigh: d.tempHigh ?? null, tempLow: d.tempLow ?? null, weatherCondition: d.weatherCondition || null, roofStatus: d.roofStatus || null, zones: d.zones || [] });
+                });
+                cleggHistory.reverse();
+                updateCleggReport(); updateCleggChart();
+            }, (err) => { console.error(err); showToast('Error loading Clegg data.'); });
+        }
+
+        // ================================================================
+        //  DATE FILTER HELPERS
+        // ================================================================
+        function parseDate(str) { const d = new Date(str); return isNaN(d.getTime()) ? null : d; }
+
+        function filterReadings(history, startOverride, endOverride) {
+            const now = new Date();
+            let start, end;
+            if (startOverride && endOverride) {
+                start = new Date(startOverride + 'T00:00:00');
+                end = new Date(endOverride + 'T23:59:59');
+            } else {
+                end = now; start = new Date(now); start.setDate(start.getDate() - 7); start.setHours(0,0,0,0);
+            }
+            return history.filter(r => { const d = parseDate(r.date); return d && d >= start && d <= end; });
+        }
+
+        // ================================================================
+        //  MOISTURE REPORTS
+        // ================================================================
+        function updateMoistureReports() {
+            const tdrBody = document.getElementById('tdrReportBody');
+            const shearBody = document.getElementById('shearReportBody');
+            tdrBody.innerHTML = ''; shearBody.innerHTML = '';
+            const filtered = filterReadings(moistureHistory, moistureFilterStart, moistureFilterEnd);
+            let hasTdr = false, hasShear = false;
+            filtered.forEach(r => {
+                const wc = '<td>' + e(r.tempHigh != null ? String(r.tempHigh) : '\u2014') + '</td><td>' + e(r.tempLow != null ? String(r.tempLow) : '\u2014') + '</td><td>' + e(r.weatherCondition || '\u2014') + '</td><td>' + e(r.roofStatus || '\u2014') + '</td>';
+                let tdrRow = '<tr><td style="text-align:left;">' + e(r.date) + '</td><td style="text-align:left;">' + e(r.enteredBy || '\u2014') + '</td>' + wc;
+                let shearRow = '<tr><td style="text-align:left;">' + e(r.date) + '</td><td style="text-align:left;">' + e(r.enteredBy || '\u2014') + '</td>' + wc;
+                let rowHasTdr = false, rowHasShear = false;
+                zones.forEach(zn => {
+                    const zd = r.zones.find(z => z.name === zn);
+                    if (zd && zd.tdr && zd.tdr.average != null) { tdrRow += '<td class="avg-cell tdr">' + zd.tdr.average.toFixed(1) + '</td>'; rowHasTdr = true; } else tdrRow += '<td>\u2014</td>';
+                    if (zd && zd.shear && zd.shear.average != null) { shearRow += '<td class="avg-cell shear">' + zd.shear.average.toFixed(1) + '</td>'; rowHasShear = true; } else shearRow += '<td>\u2014</td>';
+                });
+                tdrRow += '</tr>'; shearRow += '</tr>';
+                if (rowHasTdr) { tdrBody.innerHTML += tdrRow; hasTdr = true; }
+                if (rowHasShear) { shearBody.innerHTML += shearRow; hasShear = true; }
+            });
+            document.getElementById('tdrEmpty').style.display = hasTdr ? 'none' : 'block';
+            document.getElementById('tdrReportTable').style.display = hasTdr ? 'table' : 'none';
+            document.getElementById('shearEmpty').style.display = hasShear ? 'none' : 'block';
+            document.getElementById('shearReportTable').style.display = hasShear ? 'table' : 'none';
+        }
+
+        // ================================================================
+        //  CLEGG REPORT
+        // ================================================================
+        function updateCleggReport() {
+            const body = document.getElementById('cleggReportBody');
+            body.innerHTML = '';
+            const filtered = filterReadings(cleggHistory, cleggFilterStart, cleggFilterEnd);
+            let hasClegg = false;
+            filtered.forEach(r => {
+                const wc = '<td>' + e(r.tempHigh != null ? String(r.tempHigh) : '\u2014') + '</td><td>' + e(r.tempLow != null ? String(r.tempLow) : '\u2014') + '</td><td>' + e(r.weatherCondition || '\u2014') + '</td><td>' + e(r.roofStatus || '\u2014') + '</td>';
+                let row = '<tr><td style="text-align:left;">' + e(r.date) + '</td><td style="text-align:left;">' + e(r.enteredBy || '\u2014') + '</td>' + wc;
+                let rowHas = false;
+                zones.forEach(zn => {
+                    const zd = r.zones.find(z => z.name === zn);
+                    if (zd && zd.clegg && zd.clegg.average != null) { row += '<td class="avg-cell clegg">' + zd.clegg.average.toFixed(1) + '</td>'; rowHas = true; } else row += '<td>\u2014</td>';
+                });
+                row += '</tr>';
+                if (rowHas) { body.innerHTML += row; hasClegg = true; }
+            });
+            document.getElementById('cleggEmpty').style.display = hasClegg ? 'none' : 'block';
+            document.getElementById('cleggReportTable').style.display = hasClegg ? 'table' : 'none';
+        }
+
+        function e(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+        // ================================================================
+        //  DATE FILTER BUTTONS — MOISTURE
+        // ================================================================
+        document.getElementById('applyFilterBtn').addEventListener('click', () => {
+            const s = document.getElementById('filterStart').value, end = document.getElementById('filterEnd').value;
+            if (!s || !end) { showToast('Select both dates.'); return; }
+            if (s > end) { showToast('Start must be before end.'); return; }
+            moistureFilterStart = s; moistureFilterEnd = end;
+            document.getElementById('filterInfo').textContent = 'Showing ' + s + ' to ' + end;
+            updateMoistureReports();
+        });
+        document.getElementById('resetFilterBtn').addEventListener('click', () => {
+            moistureFilterStart = null; moistureFilterEnd = null;
+            document.getElementById('filterStart').value = ''; document.getElementById('filterEnd').value = '';
+            document.getElementById('filterInfo').textContent = 'Showing last 7 days';
+            updateMoistureReports();
+        });
+
+        // ================================================================
+        //  DATE FILTER BUTTONS — CLEGG
+        // ================================================================
+        document.getElementById('cleggApplyFilterBtn').addEventListener('click', () => {
+            const s = document.getElementById('cleggFilterStart').value, end = document.getElementById('cleggFilterEnd').value;
+            if (!s || !end) { showToast('Select both dates.'); return; }
+            if (s > end) { showToast('Start must be before end.'); return; }
+            cleggFilterStart = s; cleggFilterEnd = end;
+            document.getElementById('cleggFilterInfo').textContent = 'Showing ' + s + ' to ' + end;
+            updateCleggReport();
+        });
+        document.getElementById('cleggResetFilterBtn').addEventListener('click', () => {
+            cleggFilterStart = null; cleggFilterEnd = null;
+            document.getElementById('cleggFilterStart').value = ''; document.getElementById('cleggFilterEnd').value = '';
+            document.getElementById('cleggFilterInfo').textContent = 'Showing last 7 days';
+            updateCleggReport();
+        });
+
+        // ================================================================
+        //  CHARTS
+        // ================================================================
+        const zoneColors = ['#2D74A6', '#E68A3C', '#4CAF50', '#9C27B0', '#F44336', '#00BCD4'];
+
+        document.getElementById('chartTabTdr').addEventListener('click', () => switchChart('tdr'));
+        document.getElementById('chartTabShear').addEventListener('click', () => switchChart('shear'));
+
+        function switchChart(type) {
+            activeChartType = type;
+            document.querySelectorAll('.chart-tab').forEach(t => t.classList.toggle('active', t.dataset.chartType === type));
+            updateChart();
+        }
+
+        function updateChart() {
+            const svg = document.getElementById('chartSvg');
+            const legend = document.getElementById('chartLegend');
+            if (moistureHistory.length === 0) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--color-text-secondary)" font-size="14">No data</text>'; legend.innerHTML = ''; return; }
+            drawChart(svg, legend, [...moistureHistory].reverse(), activeChartType, 'chartTooltip');
+        }
+
+        function updateCleggChart() {
+            const svg = document.getElementById('cleggChartSvg');
+            const legend = document.getElementById('cleggChartLegend');
+            if (cleggHistory.length === 0) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--color-text-secondary)" font-size="14">No data</text>'; legend.innerHTML = ''; return; }
+            drawChart(svg, legend, [...cleggHistory].reverse(), 'clegg', 'cleggChartTooltip');
+        }
+
+        function drawChart(svg, legend, chronological, type, tooltipId) {
+            const zoneData = {};
+            zones.forEach(z => { zoneData[z] = []; });
+            chronological.forEach((r, idx) => {
+                r.zones.forEach(zone => {
+                    if (zone[type] && zone[type].average != null && zoneData[zone.name]) zoneData[zone.name].push({ index: idx, value: zone[type].average, date: r.date });
+                });
+            });
+            let allVals = [];
+            Object.values(zoneData).forEach(d => { allVals = allVals.concat(d.map(p => p.value)); });
+            if (allVals.length === 0) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--color-text-secondary)" font-size="14">No ' + type.toUpperCase() + ' data</text>'; legend.innerHTML = ''; return; }
+            const pad = { top: 20, right: 20, bottom: 40, left: 50 };
+            const sw = svg.clientWidth || 800, sh = svg.clientHeight || 350;
+            const cw = sw - pad.left - pad.right, ch = sh - pad.top - pad.bottom;
+            const minV = Math.min(...allVals), maxV = Math.max(...allVals), range = maxV - minV || 1;
+            svg.innerHTML = '';
+            for (let i = 0; i <= 5; i++) {
+                const y = pad.top + (ch/5)*i, val = maxV - (range/5)*i;
+                const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+                line.setAttribute('x1', pad.left); line.setAttribute('y1', y); line.setAttribute('x2', sw - pad.right); line.setAttribute('y2', y);
+                line.setAttribute('stroke','var(--color-border)'); line.setAttribute('stroke-width','1'); line.setAttribute('opacity','0.3');
+                svg.appendChild(line);
+                const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+                txt.setAttribute('x', pad.left-10); txt.setAttribute('y', y+4); txt.setAttribute('text-anchor','end');
+                txt.setAttribute('fill','var(--color-text-secondary)'); txt.setAttribute('font-size','11');
+                txt.textContent = val.toFixed(1); svg.appendChild(txt);
+            }
+            chronological.forEach((r, idx) => {
+                const x = pad.left + (cw/(chronological.length-1||1))*idx;
+                const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+                txt.setAttribute('x', x); txt.setAttribute('y', sh - pad.bottom + 20); txt.setAttribute('text-anchor','middle');
+                txt.setAttribute('fill','var(--color-text-secondary)'); txt.setAttribute('font-size','11');
+                txt.textContent = new Date(r.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}); svg.appendChild(txt);
+            });
+            Object.keys(zoneData).forEach((zn, zi) => {
+                const data = zoneData[zn]; if (!data.length) return;
+                const color = zoneColors[zi % zoneColors.length];
+                let d = '';
+                data.forEach((pt, i) => {
+                    const x = pad.left + (cw/(chronological.length-1||1))*pt.index;
+                    const y = pad.top + ch - ((pt.value-minV)/range)*ch;
+                    d += (i===0?'M ':'L ') + x + ' ' + y;
+                });
+                const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+                path.setAttribute('d', d); path.setAttribute('class','chart-line'); path.setAttribute('stroke', color); svg.appendChild(path);
+                data.forEach(pt => {
+                    const x = pad.left + (cw/(chronological.length-1||1))*pt.index;
+                    const y = pad.top + ch - ((pt.value-minV)/range)*ch;
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+                    circle.setAttribute('cx', x); circle.setAttribute('cy', y); circle.setAttribute('r','4');
+                    circle.setAttribute('fill', color); circle.setAttribute('class','chart-point'); circle.style.cursor='pointer';
+                    circle.addEventListener('mouseenter', (ev) => {
+                        const tip = document.getElementById(tooltipId);
+                        tip.innerHTML = '<strong>' + zn + ' (' + type.toUpperCase() + ')</strong><br>' + pt.date + '<br>Value: ' + pt.value.toFixed(1);
+                        tip.style.left = (ev.pageX+10)+'px'; tip.style.top = (ev.pageY-40)+'px'; tip.classList.add('show');
+                    });
+                    circle.addEventListener('mouseleave', () => document.getElementById(tooltipId).classList.remove('show'));
+                    svg.appendChild(circle);
+                });
+            });
+            legend.innerHTML = '';
+            zones.forEach((zn, i) => {
+                const item = document.createElement('div'); item.className = 'legend-item';
+                const cb = document.createElement('div'); cb.className = 'legend-color'; cb.style.backgroundColor = zoneColors[i % zoneColors.length];
+                const lbl = document.createElement('span'); lbl.textContent = zn;
+                item.appendChild(cb); item.appendChild(lbl); legend.appendChild(item);
+            });
+        }
+
+        // ================================================================
+        //  EXPORT
+        // ================================================================
+        function exportMoisture() {
+            if (moistureHistory.length === 0) { showToast('No data to export.'); return; }
+            let csv = 'Date,Entered By,Type,Left Field,Center Field,Right Field,1st Base Line,3rd Base Line,Infield\n';
+            moistureHistory.forEach(r => {
+                const base = ['"'+r.date+'"', '"'+(r.enteredBy||'')+'"'];
+                ['tdr','shear'].forEach(t => {
+                    const row = [...base, t.toUpperCase()];
+                    zones.forEach(zn => { const z = r.zones.find(zz=>zz.name===zn); row.push((z&&z[t]&&z[t].average!=null)?z[t].average.toFixed(1):''); });
+                    csv += row.join(',') + '\n';
+                });
+            });
+            downloadCSV(csv, 'moisture-readings-' + new Date().toISOString().split('T')[0] + '.csv');
+            showToast('Exporting moisture data...');
+        }
+
+        function exportClegg() {
+            if (cleggHistory.length === 0) { showToast('No Clegg data to export.'); return; }
+            let csv = 'Date,Entered By,Left Field,Center Field,Right Field,1st Base Line,3rd Base Line,Infield\n';
+            cleggHistory.forEach(r => {
+                const row = ['"'+r.date+'"', '"'+(r.enteredBy||'')+'"'];
+                zones.forEach(zn => { const z = r.zones.find(zz=>zz.name===zn); row.push((z&&z.clegg&&z.clegg.average!=null)?z.clegg.average.toFixed(1):''); });
+                csv += row.join(',') + '\n';
+            });
+            downloadCSV(csv, 'clegg-readings-' + new Date().toISOString().split('T')[0] + '.csv');
+            showToast('Exporting Clegg data...');
+        }
+
+        function downloadCSV(csv, filename) {
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url; link.download = filename; document.body.appendChild(link);
+            setTimeout(() => { link.click(); setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 100); }, 10);
+        }
+
+        // ================================================================
+        //  IMPORT
+        // ================================================================
+        function importData(event) {
+            if (!currentUser || !currentTeamId) { showToast('Please log in first.'); return; }
+            if (currentUserRole === 'viewer') { showToast('Viewers cannot import data.'); return; }
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(ev) {
+                try {
+                    const imported = JSON.parse(ev.target.result);
+                    if (!Array.isArray(imported)) { showToast('Invalid file format.'); return; }
+                    let count = 0;
+                    for (const r of imported) { await addDoc(moistureCol(), { timestamp: Timestamp.now(), date: r.date || new Date().toLocaleString(), enteredBy: r.enteredBy || null, zones: r.zones || [] }); count++; }
+                    showToast('Imported ' + count + ' reading(s)!');
+                } catch(err) { showToast('Error reading file.'); }
+            };
+            reader.readAsText(file); event.target.value = '';
+        }
+
+        // ================================================================
+        //  TOAST
+        // ================================================================
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message; toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ================================================================
+        //  EVENT LISTENERS
+        // ================================================================
+        document.getElementById('clearBtn').addEventListener('click', () => clearMoistureForm());
+        document.getElementById('submitBtn').addEventListener('click', () => submitMoistureReadings().catch(err => { console.error(err); showToast('Error submitting.'); }));
+        document.getElementById('saveDraftBtn').addEventListener('click', () => saveMoistureDraft().catch(err => { console.error(err); showToast('Error saving draft.'); }));
+        document.getElementById('loadDraftBtn').addEventListener('click', () => loadMoistureDraft().catch(err => { console.error(err); showToast('Error loading draft.'); }));
+        document.getElementById('discardDraftBtn').addEventListener('click', () => discardMoistureDraft().catch(err => { console.error(err); showToast('Error discarding draft.'); }));
+        document.getElementById('exportBtn').addEventListener('click', () => exportMoisture());
+        document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+        document.getElementById('importFile').addEventListener('change', (e) => importData(e));
+
+        document.getElementById('cleggClearBtn').addEventListener('click', () => clearCleggForm());
+        document.getElementById('cleggSubmitBtn').addEventListener('click', () => submitCleggReadings().catch(err => { console.error(err); showToast('Error submitting.'); }));
+        document.getElementById('cleggSaveDraftBtn').addEventListener('click', () => saveCleggDraft().catch(err => { console.error(err); showToast('Error saving draft.'); }));
+        document.getElementById('cleggLoadDraftBtn').addEventListener('click', () => loadCleggDraft().catch(err => { console.error(err); showToast('Error loading Clegg draft.'); }));
+        document.getElementById('cleggDiscardDraftBtn').addEventListener('click', () => discardCleggDraft().catch(err => { console.error(err); showToast('Error discarding draft.'); }));
+        document.getElementById('cleggExportBtn').addEventListener('click', () => exportClegg());
+    </script>
+</body>
+</html>
