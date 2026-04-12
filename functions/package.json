@@ -1,0 +1,19 @@
+{
+  "name": "fieldtrackersandbox1-functions",
+  "description": "Callable functions for Field Tracker (team invites)",
+  "main": "index.js",
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "serve": "npx --yes firebase-tools emulators:start --only functions --config ../firebase.json",
+    "deploy": "npx --yes firebase-tools deploy --only functions --config ../firebase.json",
+    "deploy:hosting": "npx --yes firebase-tools deploy --only hosting --config ../firebase.json",
+    "copy-firestore": "node scripts/copyFirestoreBetweenProjects.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.3.0"
+  },
+  "private": true
+}

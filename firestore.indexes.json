@@ -1,0 +1,21 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "moistureReadings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "submittedByUid", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "cleggReadings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "submittedByUid", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

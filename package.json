@@ -1,0 +1,11 @@
+{
+  "name": "fieldtrackersandbox1",
+  "private": true,
+  "description": "GroundsCrew Field Tracker — static app + Cloud Functions",
+  "scripts": {
+    "start": "npx --yes serve -l 8080 .",
+    "deploy": "npx --yes firebase-tools deploy",
+    "deploy:hosting": "npx --yes firebase-tools deploy --only hosting",
+    "deploy:functions": "npx --yes firebase-tools deploy --only functions"
+  }
+}
